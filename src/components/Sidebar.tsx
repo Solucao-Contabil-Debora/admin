@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { displayNameFromEmail } from '../lib/displayName'
+import logo from '../assets/logo.png'
 
-export type NavKey = 'users' | 'calendar'
+export type NavKey = 'users' | 'calendar' | 'announcements' | 'requests' | 'documents'
 
 type IconProps = {
   className?: string
@@ -62,6 +63,58 @@ function CalendarIcon({ className }: IconProps) {
   )
 }
 
+function MegaphoneIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path
+        d="M3.5 11v2a1.5 1.5 0 0 0 1.5 1.5h1l.7 4.2a1 1 0 0 0 1 .8h1a1 1 0 0 0 1-1.2L9 14.5"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M6 8.5 15.5 4c1-.5 2 .3 2 1.4v11.2c0 1.1-1 1.9-2 1.4L6 13.5v-5Z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+      <path d="M19.5 9.5c.8.6 1.3 1.5 1.3 2.5s-.5 1.9-1.3 2.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function InboxIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path
+        d="M3.5 13.5 6 5.7A1.5 1.5 0 0 1 7.4 4.5h9.2a1.5 1.5 0 0 1 1.4 1.2l2.5 7.8"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M3.5 13.5h5.2l1 2h4.6l1-2h5.2v4a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-4Z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function FolderIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path
+        d="M3.5 7.2A1.7 1.7 0 0 1 5.2 5.5h4.1c.4 0 .8.16 1.1.45l1.2 1.2c.3.3.7.45 1.1.45h6.1a1.7 1.7 0 0 1 1.7 1.7v8a1.7 1.7 0 0 1-1.7 1.7H5.2a1.7 1.7 0 0 1-1.7-1.7V7.2Z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 type NavItem = {
   key: NavKey
   label: string
@@ -71,6 +124,9 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { key: 'users', label: 'Usuários', icon: UsersIcon },
   { key: 'calendar', label: 'Calendário', icon: CalendarIcon },
+  { key: 'announcements', label: 'Comunicados', icon: MegaphoneIcon },
+  { key: 'requests', label: 'Solicitações', icon: InboxIcon },
+  { key: 'documents', label: 'Documentos', icon: FolderIcon },
 ]
 
 type SidebarProps = {
@@ -86,26 +142,26 @@ export function Sidebar({ activeView, onNavigate, userEmail, onSignOut }: Sideba
 
   return (
     <aside
-      className={`flex h-svh flex-col justify-between border-r border-gray-200 bg-white transition-[width] duration-200 ${
+      className={`flex h-svh flex-col justify-between border-r border-gray-800 bg-gray-900 transition-[width] duration-200 ${
         collapsed ? 'w-[72px]' : 'w-60'
       }`}
     >
       <div>
         <div className="flex items-center justify-between gap-2 px-4 py-5">
           <div className="flex items-center gap-2 overflow-hidden">
-            <img src="/favicon.svg" alt="" className="h-8 w-8 shrink-0" />
-            {!collapsed && (
-              <div className="leading-none">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-blue-500">Evento da</p>
-                <p className="text-sm font-extrabold uppercase text-blue-600">Igreja</p>
+            {collapsed ? (
+              <div className="h-8 w-8 shrink-0 overflow-hidden rounded">
+                <img src={logo} alt="Solução Contábil" className="h-8 w-auto max-w-none" />
               </div>
+            ) : (
+              <img src={logo} alt="Solução Contábil" className="h-9 w-auto max-w-full object-contain" />
             )}
           </div>
           <button
             type="button"
             onClick={() => setCollapsed((value) => !value)}
             title={collapsed ? 'Expandir menu' : 'Recolher menu'}
-            className="shrink-0 rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="shrink-0 rounded-md p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-300"
           >
             <PanelIcon className="h-5 w-5" />
           </button>
@@ -122,7 +178,7 @@ export function Sidebar({ activeView, onNavigate, userEmail, onSignOut }: Sideba
                 title={item.label}
                 className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium ${
                   collapsed ? 'justify-center' : ''
-                } ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
+                } ${isActive ? 'bg-blue-950 text-blue-400' : 'text-gray-400 hover:bg-gray-800'}`}
               >
                 <item.icon className="h-5 w-5 shrink-0" />
                 {!collapsed && <span>{item.label}</span>}
@@ -132,29 +188,29 @@ export function Sidebar({ activeView, onNavigate, userEmail, onSignOut }: Sideba
         </nav>
       </div>
 
-      <div className="border-t border-gray-200 p-3">
+      <div className="border-t border-gray-800 p-3">
         <div className={`flex items-center gap-2 ${collapsed ? 'justify-center' : 'justify-between'}`}>
           <button
             type="button"
             onClick={onSignOut}
             title="Sair"
-            className={`flex min-w-0 items-center gap-2 rounded-lg p-1 hover:bg-gray-50 ${
+            className={`flex min-w-0 items-center gap-2 rounded-lg p-1 hover:bg-gray-800 ${
               collapsed ? '' : 'flex-1'
             }`}
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-900 text-sm font-semibold text-blue-300">
               {displayName.charAt(0).toUpperCase()}
             </span>
             {!collapsed && (
               <span className="min-w-0 text-left">
-                <p className="truncate text-sm font-medium text-gray-900">{displayName}</p>
-                <p className="truncate text-xs text-gray-500">{userEmail}</p>
+                <p className="truncate text-sm font-medium text-gray-100">{displayName}</p>
+                <p className="truncate text-xs text-gray-400">{userEmail}</p>
               </span>
             )}
           </button>
 
           {!collapsed && (
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-400">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-800 text-gray-500">
               <BellIcon className="h-4 w-4" />
             </span>
           )}

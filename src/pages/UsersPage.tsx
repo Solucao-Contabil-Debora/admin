@@ -206,15 +206,15 @@ export function UsersPage() {
     <div>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Usuários</h2>
-          <p className="mt-1 text-sm text-gray-500">{totalUsers} no total</p>
-          <div className="mt-3 flex items-center gap-5 text-sm text-gray-600">
+          <h2 className="text-2xl font-bold text-gray-100">Usuários</h2>
+          <p className="mt-1 text-sm text-gray-400">{totalUsers} no total</p>
+          <div className="mt-3 flex items-center gap-5 text-sm text-gray-400">
             <span className="flex items-center gap-1.5">
-              <UsersStatIcon className="h-4 w-4 text-blue-500" />
+              <UsersStatIcon className="h-4 w-4 text-blue-400" />
               {totalUsers} usuários
             </span>
             <span className="flex items-center gap-1.5">
-              <ShieldIcon className="h-4 w-4 text-blue-500" />
+              <ShieldIcon className="h-4 w-4 text-blue-400" />
               {totalAdmins} admins
             </span>
           </div>
@@ -231,12 +231,12 @@ export function UsersPage() {
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 rounded-lg bg-gray-100 p-1">
+        <div className="flex items-center gap-1 rounded-lg bg-gray-800 p-1">
           <button
             type="button"
             onClick={() => handleTabChange('all')}
             className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'all' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              tab === 'all' ? 'bg-gray-900 text-blue-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
             }`}
           >
             Todos {totalUsers}
@@ -245,7 +245,7 @@ export function UsersPage() {
             type="button"
             onClick={() => handleTabChange('admins')}
             className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'admins' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              tab === 'admins' ? 'bg-gray-900 text-blue-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
             }`}
           >
             Admins {totalAdmins}
@@ -253,20 +253,20 @@ export function UsersPage() {
         </div>
 
         <div className="relative">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <input
             type="text"
             value={search}
             onChange={(event) => handleSearchChange(event.target.value)}
             placeholder="Buscar usuário..."
-            className="w-64 rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm focus:border-gray-400 focus:outline-none"
+            className="w-64 rounded-lg border border-gray-800 bg-gray-800 py-2 pl-9 pr-3 text-sm focus:border-gray-600 focus:outline-none"
           />
         </div>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-gray-200 bg-white">
+      <div className="mt-4 overflow-hidden rounded-lg border border-gray-800 bg-gray-900">
         {loadError && (
-          <div className="flex items-center justify-between p-4 text-sm text-red-600">
+          <div className="flex items-center justify-between p-4 text-sm text-red-400">
             {loadError}
             <button type="button" onClick={loadUsers} className="font-medium underline">
               Tentar novamente
@@ -274,12 +274,12 @@ export function UsersPage() {
           </div>
         )}
 
-        {!loadError && users === null && <p className="p-6 text-sm text-gray-400">Carregando...</p>}
+        {!loadError && users === null && <p className="p-6 text-sm text-gray-500">Carregando...</p>}
 
         {!loadError && users !== null && (
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-gray-100 text-xs uppercase tracking-wide text-gray-400">
+              <tr className="border-b border-gray-800 text-xs uppercase tracking-wide text-gray-500">
                 <th className="px-4 py-3 font-medium">Usuário</th>
                 <th className="px-4 py-3 font-medium">Papel</th>
                 <th className="px-4 py-3 font-medium">Ações</th>
@@ -289,22 +289,22 @@ export function UsersPage() {
               {pageUsers.map((user) => {
                 const name = user.name ?? displayNameFromEmail(user.email)
                 return (
-                  <tr key={user.id} className="border-b border-gray-50 last:border-0">
+                  <tr key={user.id} className="border-b border-gray-800 last:border-0">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-900 text-xs font-semibold text-blue-400">
                           {name.charAt(0).toUpperCase()}
                         </span>
                         <div className="min-w-0">
-                          <p className="truncate font-medium text-gray-900">{name}</p>
-                          <p className="truncate text-xs text-gray-500">{user.email}</p>
+                          <p className="truncate font-medium text-gray-100">{name}</p>
+                          <p className="truncate text-xs text-gray-400">{user.email}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <span className="flex items-center gap-1.5 text-sm">
-                        <span className={`h-1.5 w-1.5 rounded-full ${user.isAdmin ? 'bg-purple-500' : 'bg-gray-400'}`} />
-                        <span className={user.isAdmin ? 'text-purple-600' : 'text-gray-500'}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${user.isAdmin ? 'bg-purple-500' : 'bg-gray-600'}`} />
+                        <span className={user.isAdmin ? 'text-purple-400' : 'text-gray-400'}>
                           {user.isAdmin ? 'Administrador' : 'Membro'}
                         </span>
                       </span>
@@ -314,18 +314,18 @@ export function UsersPage() {
                         <button
                           type="button"
                           onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)}
-                          className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                          className="rounded-md p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-400"
                         >
                           <MoreIcon className="h-4 w-4" />
                         </button>
                         {openMenuId === user.id && (
                           <>
                             <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
-                            <div className="absolute right-0 z-20 mt-1 w-40 rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+                            <div className="absolute right-0 z-20 mt-1 w-40 rounded-md border border-gray-800 bg-gray-900 py-1 shadow-lg">
                               <button
                                 type="button"
                                 onClick={() => handleCopyEmail(user)}
-                                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                                className="w-full px-3 py-2 text-left text-sm text-gray-300 hover:bg-gray-800"
                               >
                                 {copiedId === user.id ? 'Copiado!' : 'Copiar e-mail'}
                               </button>
@@ -339,7 +339,7 @@ export function UsersPage() {
               })}
               {pageUsers.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="px-4 py-8 text-center text-sm text-gray-400">
+                  <td colSpan={3} className="px-4 py-8 text-center text-sm text-gray-500">
                     Nenhum usuário encontrado.
                   </td>
                 </tr>
@@ -349,13 +349,13 @@ export function UsersPage() {
         )}
 
         {!loadError && users !== null && (
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-4 py-3 text-sm text-gray-500">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-800 px-4 py-3 text-sm text-gray-400">
             <div className="flex items-center gap-2">
               <span>Registros por página</span>
               <select
                 value={pageSize}
                 onChange={(event) => handlePageSizeChange(Number(event.target.value))}
-                className="rounded-md border border-gray-200 bg-white px-2 py-1 text-sm focus:outline-none"
+                className="rounded-md border border-gray-800 bg-gray-900 px-2 py-1 text-sm focus:outline-none"
               >
                 {PAGE_SIZE_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -374,7 +374,7 @@ export function UsersPage() {
                 type="button"
                 onClick={() => setPage(1)}
                 disabled={currentPage === 1}
-                className="rounded-md p-1.5 hover:bg-gray-100 disabled:opacity-30"
+                className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
               >
                 <ChevronsLeftIcon className="h-4 w-4" />
               </button>
@@ -382,7 +382,7 @@ export function UsersPage() {
                 type="button"
                 onClick={() => setPage((value) => Math.max(1, value - 1))}
                 disabled={currentPage === 1}
-                className="rounded-md p-1.5 hover:bg-gray-100 disabled:opacity-30"
+                className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
               >
                 <ChevronLeftIcon className="h-4 w-4" />
               </button>
@@ -393,7 +393,7 @@ export function UsersPage() {
                 type="button"
                 onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
                 disabled={currentPage === totalPages}
-                className="rounded-md p-1.5 hover:bg-gray-100 disabled:opacity-30"
+                className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
               >
                 <ChevronRightIcon className="h-4 w-4" />
               </button>
@@ -401,7 +401,7 @@ export function UsersPage() {
                 type="button"
                 onClick={() => setPage(totalPages)}
                 disabled={currentPage === totalPages}
-                className="rounded-md p-1.5 hover:bg-gray-100 disabled:opacity-30"
+                className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
               >
                 <ChevronsRightIcon className="h-4 w-4" />
               </button>
@@ -410,12 +410,15 @@ export function UsersPage() {
         )}
       </div>
 
-      <Dialog open={modalOpen} onClose={() => setModalOpen(false)} title="Adicionar usuário">
-        <p className="mt-1 text-sm text-gray-500">Cria uma conta de acesso ao aplicativo.</p>
-
-        <form onSubmit={handleCreate} className="mt-5 space-y-4">
-          <div className="space-y-1">
-            <label htmlFor="new-user-email" className="text-sm font-medium text-gray-700">
+      <Dialog
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Adicionar usuário"
+        description="Cria uma conta de acesso ao aplicativo."
+      >
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div className="space-y-1.5">
+            <label htmlFor="new-user-email" className="text-sm font-medium text-gray-300">
               E-mail
             </label>
             <input
@@ -425,12 +428,12 @@ export function UsersPage() {
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
+              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
 
-          <div className="space-y-1">
-            <label htmlFor="new-user-password" className="text-sm font-medium text-gray-700">
+          <div className="space-y-1.5">
+            <label htmlFor="new-user-password" className="text-sm font-medium text-gray-300">
               Senha
             </label>
             <input
@@ -441,19 +444,28 @@ export function UsersPage() {
               minLength={6}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
+              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
 
-          {formError && <p className="text-sm text-red-600">{formError}</p>}
+          {formError && <p className="text-sm text-red-400">{formError}</p>}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-          >
-            {submitting ? 'Criando...' : 'Criar usuário'}
-          </button>
+          <div className="flex items-center justify-end gap-2 border-t border-gray-800 pt-4">
+            <button
+              type="button"
+              onClick={() => setModalOpen(false)}
+              className="rounded-lg border border-gray-700 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            >
+              {submitting ? 'Criando...' : 'Criar usuário'}
+            </button>
+          </div>
         </form>
       </Dialog>
     </div>
