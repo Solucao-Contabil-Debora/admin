@@ -497,11 +497,11 @@ export function DocumentsPage() {
           <p className="mt-1 text-sm text-gray-400">Envio e recebimento de arquivos com clientes</p>
           <div className="mt-3 flex items-center gap-5 text-sm text-gray-400">
             <span className="flex items-center gap-1.5">
-              <UploadStatIcon className="h-4 w-4 text-blue-400" />
+              <UploadStatIcon className="h-4 w-4 text-primary-400" />
               {totalSent} enviados
             </span>
             <span className="flex items-center gap-1.5">
-              <DownloadStatIcon className="h-4 w-4 text-blue-400" />
+              <DownloadStatIcon className="h-4 w-4 text-primary-400" />
               {totalReceived} recebidos
             </span>
           </div>
@@ -511,7 +511,7 @@ export function DocumentsPage() {
           <button
             type="button"
             onClick={openCreateModal}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
           >
             <PlusIcon className="h-4 w-4" />
             Enviar documento
@@ -525,7 +525,7 @@ export function DocumentsPage() {
             type="button"
             onClick={() => handleTabChange('sent')}
             className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'sent' ? 'bg-gray-900 text-blue-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
+              tab === 'sent' ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
             }`}
           >
             Enviados {totalSent}
@@ -534,7 +534,7 @@ export function DocumentsPage() {
             type="button"
             onClick={() => handleTabChange('received')}
             className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'received' ? 'bg-gray-900 text-blue-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
+              tab === 'received' ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
             }`}
           >
             Recebidos {totalReceived}
@@ -688,7 +688,7 @@ export function DocumentsPage() {
                   <tr key={upload.id} className="border-b border-gray-800 last:border-0">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-900 text-xs font-semibold text-blue-400">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-900 text-xs font-semibold text-primary-400">
                           {name.charAt(0).toUpperCase()}
                         </span>
                         <div className="min-w-0">
@@ -811,7 +811,7 @@ export function DocumentsPage() {
               required
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
@@ -824,7 +824,7 @@ export function DocumentsPage() {
               rows={2}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
@@ -840,7 +840,7 @@ export function DocumentsPage() {
               type="file"
               required={!editingDocument}
               onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm text-gray-400 transition-colors file:mr-3 file:rounded-md file:border-0 file:bg-gray-800 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-gray-300 hover:file:bg-gray-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm text-gray-400 transition-colors file:mr-3 file:rounded-md file:border-0 file:bg-gray-800 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-gray-300 hover:file:bg-gray-700 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
@@ -853,7 +853,7 @@ export function DocumentsPage() {
                   type="button"
                   onClick={() => handleAudienceTypeChange(option)}
                   className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium ${
-                    audienceType === option ? 'bg-gray-900 text-blue-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
+                    audienceType === option ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
                   {AUDIENCE_TYPE_LABELS[option]}
@@ -868,7 +868,7 @@ export function DocumentsPage() {
                   value={audienceQuery}
                   onChange={(event) => setAudienceQuery(event.target.value)}
                   placeholder="Buscar pessoa..."
-                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                 />
 
                 {clientsError && (
@@ -897,8 +897,8 @@ export function DocumentsPage() {
                         onChange={() => handleToggleAudienceClient(client.id)}
                         className={
                           audienceType === 'individual'
-                            ? 'h-4 w-4 border-gray-700 accent-blue-600'
-                            : 'h-4 w-4 rounded border-gray-700 accent-blue-600'
+                            ? 'h-4 w-4 border-gray-700 accent-primary-600'
+                            : 'h-4 w-4 rounded border-gray-700 accent-primary-600'
                         }
                       />
                       {client.name ?? displayNameFromEmail(client.email)}
@@ -922,7 +922,7 @@ export function DocumentsPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
             >
               {submitting ? 'Enviando...' : editingDocument ? 'Salvar' : 'Enviar'}
             </button>

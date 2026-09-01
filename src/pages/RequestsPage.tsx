@@ -157,13 +157,13 @@ const RESPONSE_TYPE_LABELS: Record<ResponseType, string> = {
 
 const RESPONSE_TYPE_DOT_COLORS: Record<ResponseType, string> = {
   arquivo: 'bg-indigo-500',
-  texto: 'bg-blue-500',
+  texto: 'bg-primary-500',
   data: 'bg-teal-500',
 }
 
 const RESPONSE_TYPE_TEXT_COLORS: Record<ResponseType, string> = {
   arquivo: 'text-indigo-400',
-  texto: 'text-blue-400',
+  texto: 'text-primary-400',
   data: 'text-teal-400',
 }
 
@@ -500,11 +500,11 @@ export function RequestsPage() {
           <p className="mt-1 text-sm text-gray-400">{totalRequests} no total</p>
           <div className="mt-3 flex items-center gap-5 text-sm text-gray-400">
             <span className="flex items-center gap-1.5">
-              <InboxStatIcon className="h-4 w-4 text-blue-400" />
+              <InboxStatIcon className="h-4 w-4 text-primary-400" />
               {totalRequests} solicitações
             </span>
             <span className="flex items-center gap-1.5">
-              <CheckStatIcon className="h-4 w-4 text-blue-400" />
+              <CheckStatIcon className="h-4 w-4 text-primary-400" />
               {totalResponses} respostas recebidas
             </span>
           </div>
@@ -513,7 +513,7 @@ export function RequestsPage() {
         <button
           type="button"
           onClick={openCreateModal}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
         >
           <PlusIcon className="h-4 w-4" />
           Nova solicitação
@@ -526,7 +526,7 @@ export function RequestsPage() {
             type="button"
             onClick={() => handleTabChange('all')}
             className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'all' ? 'bg-gray-900 text-blue-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
+              tab === 'all' ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
             }`}
           >
             Todas {totalRequests}
@@ -535,7 +535,7 @@ export function RequestsPage() {
             type="button"
             onClick={() => handleTabChange('pending')}
             className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'pending' ? 'bg-gray-900 text-blue-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
+              tab === 'pending' ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
             }`}
           >
             Pendentes {totalPending}
@@ -734,7 +734,7 @@ export function RequestsPage() {
               required
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
@@ -747,7 +747,7 @@ export function RequestsPage() {
               rows={3}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
@@ -759,7 +759,7 @@ export function RequestsPage() {
               id="request-type"
               value={responseType}
               onChange={(event) => setResponseType(event.target.value as ResponseType)}
-              className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             >
               {(Object.keys(RESPONSE_TYPE_LABELS) as ResponseType[]).map((option) => (
                 <option key={option} value={option}>
@@ -778,7 +778,7 @@ export function RequestsPage() {
                   type="button"
                   onClick={() => handleAudienceTypeChange(option)}
                   className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium ${
-                    audienceType === option ? 'bg-gray-900 text-blue-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
+                    audienceType === option ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
                   {AUDIENCE_TYPE_LABELS[option]}
@@ -793,7 +793,7 @@ export function RequestsPage() {
                   value={audienceQuery}
                   onChange={(event) => setAudienceQuery(event.target.value)}
                   placeholder="Buscar pessoa..."
-                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                 />
 
                 {clientsError && (
@@ -822,8 +822,8 @@ export function RequestsPage() {
                         onChange={() => handleToggleAudienceClient(client.id)}
                         className={
                           audienceType === 'individual'
-                            ? 'h-4 w-4 border-gray-700 accent-blue-600'
-                            : 'h-4 w-4 rounded border-gray-700 accent-blue-600'
+                            ? 'h-4 w-4 border-gray-700 accent-primary-600'
+                            : 'h-4 w-4 rounded border-gray-700 accent-primary-600'
                         }
                       />
                       {client.name ?? displayNameFromEmail(client.email)}
@@ -847,7 +847,7 @@ export function RequestsPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
             >
               {submitting ? 'Salvando...' : 'Salvar'}
             </button>
@@ -912,7 +912,7 @@ export function RequestsPage() {
                   <div key={client.id} className="rounded-xl border border-gray-800 p-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-900 text-xs font-semibold text-blue-400">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-900 text-xs font-semibold text-primary-400">
                           {name.charAt(0).toUpperCase()}
                         </span>
                         <div className="min-w-0">
@@ -936,7 +936,7 @@ export function RequestsPage() {
                             type="button"
                             onClick={() => handleDownload(response.filePath!)}
                             disabled={downloadingPath === response.filePath}
-                            className="flex items-center gap-1.5 text-sm font-medium text-blue-400 hover:text-blue-300 disabled:opacity-50"
+                            className="flex items-center gap-1.5 text-sm font-medium text-primary-400 hover:text-primary-300 disabled:opacity-50"
                           >
                             <DownloadIcon className="h-4 w-4" />
                             {downloadingPath === response.filePath ? 'Gerando link...' : 'Baixar arquivo'}

@@ -142,7 +142,7 @@ export function Sidebar({ activeView, onNavigate, userEmail, onSignOut }: Sideba
 
   return (
     <aside
-      className={`flex h-svh flex-col justify-between border-r border-gray-800 bg-gray-900 transition-[width] duration-200 ${
+      className={`flex h-svh flex-col justify-between border-r border-sidebar-800 bg-sidebar-900 transition-[width] duration-200 ${
         collapsed ? 'w-[72px]' : 'w-60'
       }`}
     >
@@ -161,7 +161,7 @@ export function Sidebar({ activeView, onNavigate, userEmail, onSignOut }: Sideba
             type="button"
             onClick={() => setCollapsed((value) => !value)}
             title={collapsed ? 'Expandir menu' : 'Recolher menu'}
-            className="shrink-0 rounded-md p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-300"
+            className="shrink-0 rounded-md p-1.5 text-sidebar-500 hover:bg-sidebar-800 hover:text-sidebar-300"
           >
             <PanelIcon className="h-5 w-5" />
           </button>
@@ -178,7 +178,7 @@ export function Sidebar({ activeView, onNavigate, userEmail, onSignOut }: Sideba
                 title={item.label}
                 className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium ${
                   collapsed ? 'justify-center' : ''
-                } ${isActive ? 'bg-blue-950 text-blue-400' : 'text-gray-400 hover:bg-gray-800'}`}
+                } ${isActive ? 'bg-primary-950 text-primary-400' : 'text-sidebar-400 hover:bg-sidebar-800'}`}
               >
                 <item.icon className="h-5 w-5 shrink-0" />
                 {!collapsed && <span>{item.label}</span>}
@@ -188,29 +188,29 @@ export function Sidebar({ activeView, onNavigate, userEmail, onSignOut }: Sideba
         </nav>
       </div>
 
-      <div className="border-t border-gray-800 p-3">
+      <div className="border-t border-sidebar-800 p-3">
         <div className={`flex items-center gap-2 ${collapsed ? 'justify-center' : 'justify-between'}`}>
           <button
             type="button"
             onClick={onSignOut}
             title="Sair"
-            className={`flex min-w-0 items-center gap-2 rounded-lg p-1 hover:bg-gray-800 ${
+            className={`flex min-w-0 items-center gap-2 rounded-lg p-1 hover:bg-sidebar-800 ${
               collapsed ? '' : 'flex-1'
             }`}
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-900 text-sm font-semibold text-blue-300">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-900 text-sm font-semibold text-primary-300">
               {displayName.charAt(0).toUpperCase()}
             </span>
             {!collapsed && (
               <span className="min-w-0 text-left">
-                <p className="truncate text-sm font-medium text-gray-100">{displayName}</p>
-                <p className="truncate text-xs text-gray-400">{userEmail}</p>
+                <p className="truncate text-sm font-medium text-sidebar-100">{displayName}</p>
+                <p className="truncate text-xs text-sidebar-400">{userEmail}</p>
               </span>
             )}
           </button>
 
           {!collapsed && (
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-800 text-gray-500">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-sidebar-800 text-sidebar-500">
               <BellIcon className="h-4 w-4" />
             </span>
           )}

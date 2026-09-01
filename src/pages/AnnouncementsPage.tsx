@@ -136,14 +136,14 @@ const ANNOUNCEMENT_TYPE_LABELS: Record<AnnouncementType, string> = {
 const ANNOUNCEMENT_TYPE_DOT_COLORS: Record<AnnouncementType, string> = {
   alerta: 'bg-red-500',
   aviso: 'bg-amber-500',
-  normal: 'bg-blue-500',
+  normal: 'bg-primary-500',
   pendencia: 'bg-purple-500',
 }
 
 const ANNOUNCEMENT_TYPE_TEXT_COLORS: Record<AnnouncementType, string> = {
   alerta: 'text-red-400',
   aviso: 'text-amber-400',
-  normal: 'text-blue-400',
+  normal: 'text-primary-400',
   pendencia: 'text-purple-400',
 }
 
@@ -409,11 +409,11 @@ export function AnnouncementsPage() {
           <p className="mt-1 text-sm text-gray-400">{totalAnnouncements} no total</p>
           <div className="mt-3 flex items-center gap-5 text-sm text-gray-400">
             <span className="flex items-center gap-1.5">
-              <MegaphoneStatIcon className="h-4 w-4 text-blue-400" />
+              <MegaphoneStatIcon className="h-4 w-4 text-primary-400" />
               {totalAnnouncements} comunicados
             </span>
             <span className="flex items-center gap-1.5">
-              <CalendarStatIcon className="h-4 w-4 text-blue-400" />
+              <CalendarStatIcon className="h-4 w-4 text-primary-400" />
               {totalScheduled} agendados
             </span>
           </div>
@@ -422,7 +422,7 @@ export function AnnouncementsPage() {
         <button
           type="button"
           onClick={openCreateModal}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
         >
           <PlusIcon className="h-4 w-4" />
           Novo comunicado
@@ -435,7 +435,7 @@ export function AnnouncementsPage() {
             type="button"
             onClick={() => handleTabChange('all')}
             className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'all' ? 'bg-gray-900 text-blue-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
+              tab === 'all' ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
             }`}
           >
             Todos {totalAnnouncements}
@@ -444,7 +444,7 @@ export function AnnouncementsPage() {
             type="button"
             onClick={() => handleTabChange('scheduled')}
             className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'scheduled' ? 'bg-gray-900 text-blue-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
+              tab === 'scheduled' ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
             }`}
           >
             Agendados {totalScheduled}
@@ -637,7 +637,7 @@ export function AnnouncementsPage() {
               required
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
@@ -651,7 +651,7 @@ export function AnnouncementsPage() {
               required
               value={message}
               onChange={(event) => setMessage(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
@@ -663,7 +663,7 @@ export function AnnouncementsPage() {
               id="announcement-type"
               value={announcementType}
               onChange={(event) => setAnnouncementType(event.target.value as AnnouncementType)}
-              className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             >
               {(Object.keys(ANNOUNCEMENT_TYPE_LABELS) as AnnouncementType[]).map((option) => (
                 <option key={option} value={option}>
@@ -679,7 +679,7 @@ export function AnnouncementsPage() {
                 type="checkbox"
                 checked={hasEventDate}
                 onChange={(event) => setHasEventDate(event.target.checked)}
-                className="h-4 w-4 rounded border-gray-700 accent-blue-600"
+                className="h-4 w-4 rounded border-gray-700 accent-primary-600"
               />
               Vincular a uma data no calendário
             </label>
@@ -690,7 +690,7 @@ export function AnnouncementsPage() {
                 required
                 value={eventDate}
                 onChange={(event) => setEventDate(event.target.value)}
-                className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             )}
           </div>
@@ -704,7 +704,7 @@ export function AnnouncementsPage() {
                   type="button"
                   onClick={() => handleAudienceTypeChange(option)}
                   className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium ${
-                    audienceType === option ? 'bg-gray-900 text-blue-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
+                    audienceType === option ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
                   {AUDIENCE_TYPE_LABELS[option]}
@@ -719,7 +719,7 @@ export function AnnouncementsPage() {
                   value={audienceQuery}
                   onChange={(event) => setAudienceQuery(event.target.value)}
                   placeholder="Buscar pessoa..."
-                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                 />
 
                 {clientsError && (
@@ -748,8 +748,8 @@ export function AnnouncementsPage() {
                         onChange={() => handleToggleAudienceClient(client.id)}
                         className={
                           audienceType === 'individual'
-                            ? 'h-4 w-4 border-gray-700 accent-blue-600'
-                            : 'h-4 w-4 rounded border-gray-700 accent-blue-600'
+                            ? 'h-4 w-4 border-gray-700 accent-primary-600'
+                            : 'h-4 w-4 rounded border-gray-700 accent-primary-600'
                         }
                       />
                       {client.name ?? displayNameFromEmail(client.email)}
@@ -773,7 +773,7 @@ export function AnnouncementsPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
             >
               {submitting ? 'Salvando...' : 'Salvar'}
             </button>

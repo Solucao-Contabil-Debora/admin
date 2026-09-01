@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useAuth } from './hooks/useAuth'
 import { LoginForm } from './components/LoginForm'
+import loginImage from './assets/imagem-login.png'
+import logo from './assets/logo.png'
 import { Sidebar } from './components/Sidebar'
 import type { NavKey } from './components/Sidebar'
 import { UsersPage } from './pages/UsersPage'
@@ -23,8 +25,17 @@ function App() {
 
   if (!session) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-gray-950">
-        <LoginForm onSubmit={signIn} />
+      <div className="flex min-h-svh bg-zinc-950">
+        <div className="relative hidden flex-1 overflow-hidden lg:block">
+          <img src={loginImage} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        </div>
+
+        <div className="flex flex-1 items-center justify-center p-6">
+          <div className="w-full max-w-xs">
+            <img src={logo} alt="Solução Contábil" className="mx-auto mb-8 h-9 w-auto object-contain" />
+            <LoginForm onSubmit={signIn} />
+          </div>
+        </div>
       </div>
     )
   }

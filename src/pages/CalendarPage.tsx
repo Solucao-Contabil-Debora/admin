@@ -115,13 +115,13 @@ const NOTE_TYPE_LABELS: Record<NoteType, string> = {
 
 const NOTE_TYPE_DOT_COLORS: Record<NoteType, string> = {
   alerta: 'bg-red-500',
-  informativo: 'bg-blue-500',
+  informativo: 'bg-primary-500',
   urgente: 'bg-amber-500',
 }
 
 const NOTE_TYPE_TEXT_COLORS: Record<NoteType, string> = {
   alerta: 'text-red-400',
-  informativo: 'text-blue-400',
+  informativo: 'text-primary-400',
   urgente: 'text-amber-400',
 }
 
@@ -453,11 +453,11 @@ export function CalendarPage() {
           <p className="mt-1 text-sm text-gray-400">{totalNotesThisMonth} notas neste mês</p>
           <div className="mt-3 flex items-center gap-5 text-sm text-gray-400">
             <span className="flex items-center gap-1.5">
-              <NoteIcon className="h-4 w-4 text-blue-400" />
+              <NoteIcon className="h-4 w-4 text-primary-400" />
               {totalNotesThisMonth} notas
             </span>
             <span className="flex items-center gap-1.5">
-              <BellIcon className="h-4 w-4 text-blue-400" />
+              <BellIcon className="h-4 w-4 text-primary-400" />
               {notesWithNotification} com notificação
             </span>
           </div>
@@ -466,7 +466,7 @@ export function CalendarPage() {
         <button
           type="button"
           onClick={() => openCreateModal(selectedDate ?? new Date())}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
         >
           <PlusIcon className="h-4 w-4" />
           Nova nota
@@ -616,11 +616,11 @@ export function CalendarPage() {
                   onClick={() => handleSelectDay(day)}
                   className={`flex min-h-[76px] flex-col items-start gap-1 bg-gray-900 p-2 text-left hover:bg-gray-800 ${
                     isCurrentMonth ? '' : 'text-gray-700'
-                  } ${isSelected ? 'ring-2 ring-inset ring-blue-500' : ''}`}
+                  } ${isSelected ? 'ring-2 ring-inset ring-primary-500' : ''}`}
                 >
                   <span
                     className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
-                      isToday ? 'bg-blue-600 text-white' : ''
+                      isToday ? 'bg-primary-600 text-white' : ''
                     }`}
                   >
                     {day.getDate()}
@@ -653,7 +653,7 @@ export function CalendarPage() {
                 <button
                   type="button"
                   onClick={() => openCreateModal(selectedDate)}
-                  className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                  className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white hover:bg-primary-700"
                 >
                   <PlusIcon className="h-4 w-4" />
                   Nova nota
@@ -750,7 +750,7 @@ export function CalendarPage() {
               required
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
@@ -763,7 +763,7 @@ export function CalendarPage() {
               rows={2}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
@@ -778,7 +778,7 @@ export function CalendarPage() {
                 required
                 value={eventDate}
                 onChange={(event) => setEventDate(event.target.value)}
-                className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
             <div className="space-y-1.5">
@@ -791,7 +791,7 @@ export function CalendarPage() {
                 required
                 value={eventTime}
                 onChange={(event) => setEventTime(event.target.value)}
-                className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
           </div>
@@ -804,7 +804,7 @@ export function CalendarPage() {
               id="note-type"
               value={noteType}
               onChange={(event) => setNoteType(event.target.value as NoteType)}
-              className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             >
               {(Object.keys(NOTE_TYPE_LABELS) as NoteType[]).map((option) => (
                 <option key={option} value={option}>
@@ -820,7 +820,7 @@ export function CalendarPage() {
                 type="checkbox"
                 checked={allClients}
                 onChange={(event) => setAllClients(event.target.checked)}
-                className="h-4 w-4 rounded border-gray-700 accent-blue-600"
+                className="h-4 w-4 rounded border-gray-700 accent-primary-600"
               />
               Todos os clientes
             </label>
@@ -832,7 +832,7 @@ export function CalendarPage() {
                   value={audienceQuery}
                   onChange={(event) => setAudienceQuery(event.target.value)}
                   placeholder="Buscar cliente..."
-                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                 />
                 <div className="max-h-32 space-y-0.5 overflow-y-auto">
                   {filteredAudienceClients.length === 0 && (
@@ -847,7 +847,7 @@ export function CalendarPage() {
                         type="checkbox"
                         checked={audienceClientIds.includes(client.id)}
                         onChange={() => toggleAudienceClient(client.id)}
-                        className="h-4 w-4 rounded border-gray-700 accent-blue-600"
+                        className="h-4 w-4 rounded border-gray-700 accent-primary-600"
                       />
                       {client.name ?? displayNameFromEmail(client.email)}
                     </label>
@@ -862,7 +862,7 @@ export function CalendarPage() {
               type="checkbox"
               checked={notifyEnabled}
               onChange={(event) => setNotifyEnabled(event.target.checked)}
-              className="h-4 w-4 rounded border-gray-700 accent-blue-600"
+              className="h-4 w-4 rounded border-gray-700 accent-primary-600"
             />
             Notificar
           </label>
@@ -876,7 +876,7 @@ export function CalendarPage() {
                     type="checkbox"
                     checked={selectedOffsets.includes(option.minutes)}
                     onChange={() => toggleOffset(option.minutes)}
-                    className="h-4 w-4 rounded border-gray-700 accent-blue-600"
+                    className="h-4 w-4 rounded border-gray-700 accent-primary-600"
                   />
                   {option.label}
                 </label>
@@ -897,7 +897,7 @@ export function CalendarPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
             >
               {submitting ? 'Salvando...' : 'Salvar'}
             </button>

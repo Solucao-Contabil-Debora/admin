@@ -210,11 +210,11 @@ export function UsersPage() {
           <p className="mt-1 text-sm text-gray-400">{totalUsers} no total</p>
           <div className="mt-3 flex items-center gap-5 text-sm text-gray-400">
             <span className="flex items-center gap-1.5">
-              <UsersStatIcon className="h-4 w-4 text-blue-400" />
+              <UsersStatIcon className="h-4 w-4 text-primary-400" />
               {totalUsers} usuários
             </span>
             <span className="flex items-center gap-1.5">
-              <ShieldIcon className="h-4 w-4 text-blue-400" />
+              <ShieldIcon className="h-4 w-4 text-primary-400" />
               {totalAdmins} admins
             </span>
           </div>
@@ -223,7 +223,7 @@ export function UsersPage() {
         <button
           type="button"
           onClick={openModal}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
         >
           <PlusIcon className="h-4 w-4" />
           Adicionar
@@ -236,7 +236,7 @@ export function UsersPage() {
             type="button"
             onClick={() => handleTabChange('all')}
             className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'all' ? 'bg-gray-900 text-blue-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
+              tab === 'all' ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
             }`}
           >
             Todos {totalUsers}
@@ -245,7 +245,7 @@ export function UsersPage() {
             type="button"
             onClick={() => handleTabChange('admins')}
             className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'admins' ? 'bg-gray-900 text-blue-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
+              tab === 'admins' ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
             }`}
           >
             Admins {totalAdmins}
@@ -292,7 +292,7 @@ export function UsersPage() {
                   <tr key={user.id} className="border-b border-gray-800 last:border-0">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-900 text-xs font-semibold text-blue-400">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-900 text-xs font-semibold text-primary-400">
                           {name.charAt(0).toUpperCase()}
                         </span>
                         <div className="min-w-0">
@@ -428,7 +428,7 @@ export function UsersPage() {
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
@@ -444,7 +444,7 @@ export function UsersPage() {
               minLength={6}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
@@ -461,7 +461,7 @@ export function UsersPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
             >
               {submitting ? 'Criando...' : 'Criar usuário'}
             </button>
