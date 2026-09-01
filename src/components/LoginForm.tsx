@@ -134,7 +134,7 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-md bg-gradient-to-r from-primary-400 to-primary-600 px-4 py-2.5 text-sm font-semibold text-zinc-950 transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="w-full rounded-md bg-gradient-to-r from-[#d4c45e] to-[#958726] px-4 py-2.5 text-sm font-semibold text-zinc-950 transition-opacity hover:opacity-90 disabled:opacity-50"
       >
         {submitting ? 'Entrando...' : 'Entrar'}
       </button>
