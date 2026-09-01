@@ -87,7 +87,6 @@ function App() {
           >
             <MenuIcon className="h-5 w-5" />
           </button>
-          <img src={logo} alt="Solução Contábil" className="h-7 w-auto object-contain" />
         </div>
         <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">
           {activeView === 'users' && <UsersPage />}

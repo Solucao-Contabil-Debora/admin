@@ -279,9 +279,6 @@ export function UsersPage() {
                   <tr key={user.id} className="border-b border-gray-800 last:border-0">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-900 text-xs font-semibold text-primary-400">
-                          {name.charAt(0).toUpperCase()}
-                        </span>
                         <div className="min-w-0">
                           <p className="truncate font-medium text-gray-100">{name}</p>
                           <p className="truncate text-xs text-gray-400">{user.email}</p>

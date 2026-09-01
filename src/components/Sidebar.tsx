@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { displayNameFromEmail } from '../lib/displayName'
-import logo from '../assets/logo.png'
+import logo from '../assets/logo-black.png'
 
 export type NavKey = 'users' | 'calendar' | 'announcements' | 'requests' | 'documents'
 
@@ -189,10 +189,10 @@ export function Sidebar({ activeView, onNavigate, userEmail, onSignOut, mobileOp
 
   return (
     <>
-      {mobileOpen && <div className="fixed inset-0 z-40 bg-gray-950/60 md:hidden" onClick={onCloseMobile} />}
+      {mobileOpen && <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={onCloseMobile} />}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-svh w-64 flex-col justify-between border-r border-sidebar-800 bg-sidebar-900 transition-transform duration-200 md:static md:z-auto md:translate-x-0 md:transition-[width] ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-svh w-64 flex-col justify-between border-r border-gray-800 bg-gray-900 transition-transform duration-200 md:static md:z-auto md:translate-x-0 md:transition-[width] ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         } ${collapsed ? 'md:w-[72px]' : 'md:w-60'}`}
       >
@@ -200,18 +200,18 @@ export function Sidebar({ activeView, onNavigate, userEmail, onSignOut, mobileOp
           <div className="flex items-center justify-between gap-2 px-4 py-5">
             <div className="flex items-center gap-2 overflow-hidden">
               {collapsed ? (
-                <div className="hidden h-8 w-8 shrink-0 overflow-hidden rounded md:block">
-                  <img src={logo} alt="Solução Contábil" className="h-8 w-auto max-w-none" />
+                <div className="hidden h-10 w-10 shrink-0 overflow-hidden rounded md:block">
+                  <img src={logo} alt="Solução Contábil" className="h-10 w-auto max-w-none" />
                 </div>
               ) : (
-                <img src={logo} alt="Solução Contábil" className="h-9 w-auto max-w-full object-contain" />
+                <img src={logo} alt="Solução Contábil" className="h-24 w-auto max-w-full object-contain" />
               )}
             </div>
             <button
               type="button"
               onClick={() => setCollapsed((value) => !value)}
               title={collapsed ? 'Expandir menu' : 'Recolher menu'}
-              className="hidden shrink-0 cursor-pointer rounded-md p-1.5 text-sidebar-500 hover:bg-sidebar-800 hover:text-sidebar-300 md:block"
+              className="hidden shrink-0 cursor-pointer rounded-md p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-300 md:block"
             >
               <PanelIcon className="h-5 w-5" />
             </button>
@@ -219,7 +219,7 @@ export function Sidebar({ activeView, onNavigate, userEmail, onSignOut, mobileOp
               type="button"
               onClick={onCloseMobile}
               title="Fechar menu"
-              className="shrink-0 cursor-pointer rounded-md p-1.5 text-sidebar-500 hover:bg-sidebar-800 hover:text-sidebar-300 md:hidden"
+              className="shrink-0 cursor-pointer rounded-md p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-300 md:hidden"
             >
               <XIcon className="h-5 w-5" />
             </button>
@@ -236,7 +236,7 @@ export function Sidebar({ activeView, onNavigate, userEmail, onSignOut, mobileOp
                   title={item.label}
                   className={`flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium ${
                     collapsed ? 'md:justify-center' : ''
-                  } ${isActive ? 'bg-primary-950 text-primary-400' : 'text-sidebar-400 hover:bg-sidebar-800'}`}
+                  } ${isActive ? 'bg-primary-600 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
                 >
                   <item.icon className="h-5 w-5 shrink-0" />
                   <span className={collapsed ? 'md:hidden' : ''}>{item.label}</span>
@@ -246,23 +246,23 @@ export function Sidebar({ activeView, onNavigate, userEmail, onSignOut, mobileOp
           </nav>
         </div>
 
-        <div ref={menuRef} className="relative border-t border-sidebar-800 p-3">
+        <div ref={menuRef} className="relative border-t border-gray-800 p-3">
           {menuOpen && (
             <div
               role="menu"
-              className={`absolute inset-x-3 bottom-full mb-2 overflow-hidden rounded-lg border border-sidebar-800 bg-sidebar-900 shadow-lg [animation:dialog-panel_0.15s_ease-out] ${
+              className={`absolute inset-x-3 bottom-full mb-2 overflow-hidden rounded-lg border border-gray-800 bg-gray-900 shadow-lg [animation:dialog-panel_0.15s_ease-out] ${
                 collapsed ? 'md:inset-x-auto md:bottom-0 md:left-full md:mb-0 md:ml-2 md:w-48' : ''
               }`}
             >
-              <div className="border-b border-sidebar-800 px-3 py-2.5">
-                <p className="truncate text-sm font-medium text-sidebar-100">{displayName}</p>
-                <p className="truncate text-xs text-sidebar-400">{userEmail}</p>
+              <div className="border-b border-gray-800 px-3 py-2.5">
+                <p className="truncate text-sm font-medium text-gray-100">{displayName}</p>
+                <p className="truncate text-xs text-gray-400">{userEmail}</p>
               </div>
               <button
                 type="button"
                 role="menuitem"
                 onClick={onSignOut}
-                className="flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-sm font-medium text-red-400 hover:bg-sidebar-800"
+                className="flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-sm font-medium text-red-400 hover:bg-gray-800"
               >
                 <LogOutIcon className="h-4 w-4 shrink-0" />
                 Sair
@@ -276,7 +276,7 @@ export function Sidebar({ activeView, onNavigate, userEmail, onSignOut, mobileOp
             title={displayName}
             aria-haspopup="menu"
             aria-expanded={menuOpen}
-            className={`flex w-full cursor-pointer items-center gap-2 rounded-lg p-1 hover:bg-sidebar-800 ${
+            className={`flex w-full cursor-pointer items-center gap-2 rounded-lg p-1 hover:bg-gray-800 ${
               collapsed ? 'md:justify-center' : ''
             }`}
           >
@@ -284,11 +284,11 @@ export function Sidebar({ activeView, onNavigate, userEmail, onSignOut, mobileOp
               {displayName.charAt(0).toUpperCase()}
             </span>
             <span className={`min-w-0 text-left ${collapsed ? 'md:hidden' : ''}`}>
-              <p className="truncate text-sm font-medium text-sidebar-100">{displayName}</p>
-              <p className="truncate text-xs text-sidebar-400">{userEmail}</p>
+              <p className="truncate text-sm font-medium text-gray-100">{displayName}</p>
+              <p className="truncate text-xs text-gray-400">{userEmail}</p>
             </span>
             <ChevronUpIcon
-              className={`h-4 w-4 shrink-0 text-sidebar-500 transition-transform ${collapsed ? 'md:hidden' : ''} ${
+              className={`h-4 w-4 shrink-0 text-gray-500 transition-transform ${collapsed ? 'md:hidden' : ''} ${
                 menuOpen ? '' : 'rotate-180'
               }`}
             />
