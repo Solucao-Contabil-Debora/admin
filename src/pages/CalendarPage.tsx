@@ -447,17 +447,17 @@ export function CalendarPage() {
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-100">Calendário</h2>
           <p className="mt-1 text-sm text-gray-400">{totalNotesThisMonth} notas neste mês</p>
-          <div className="mt-3 flex items-center gap-5 text-sm text-gray-400">
+          <div className="mt-3 flex flex-wrap items-center gap-5 text-sm text-gray-400">
             <span className="flex items-center gap-1.5">
-              <NoteIcon className="h-4 w-4 text-primary-400" />
+              <NoteIcon className="h-4 w-4 text-gray-500" />
               {totalNotesThisMonth} notas
             </span>
             <span className="flex items-center gap-1.5">
-              <BellIcon className="h-4 w-4 text-primary-400" />
+              <BellIcon className="h-4 w-4 text-gray-500" />
               {notesWithNotification} com notificação
             </span>
           </div>
@@ -494,20 +494,20 @@ export function CalendarPage() {
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex w-full items-center gap-2 sm:w-auto">
           <button
             type="button"
             onClick={() => setViewMonth(startOfMonth(new Date()))}
-            className="rounded-md border border-gray-800 px-3 py-1.5 text-sm text-gray-400 hover:bg-gray-800"
+            className="shrink-0 rounded-md border border-gray-800 px-3 py-1.5 text-sm text-gray-400 hover:bg-gray-800"
           >
             Hoje
           </button>
 
-          <div className="relative">
+          <div className="relative w-full sm:w-56">
             <button
               type="button"
               onClick={() => setClientPickerOpen((value) => !value)}
-              className="relative flex w-56 items-center justify-start truncate rounded-lg border border-gray-800 bg-gray-800 py-2 pl-9 pr-3 text-left text-sm text-gray-300 hover:border-gray-700"
+              className="relative flex w-full items-center justify-start truncate rounded-lg border border-gray-800 bg-gray-800 py-2 pl-9 pr-3 text-left text-sm text-gray-300 hover:border-gray-700"
             >
               <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
               <span className="truncate">
@@ -596,7 +596,7 @@ export function CalendarPage() {
           </div>
         )}
 
-        <div className="mt-3 flex gap-4">
+        <div className="mt-3 flex flex-col gap-4 lg:flex-row">
           <div className="grid flex-1 grid-cols-7 gap-px overflow-hidden rounded-lg border border-gray-800 bg-gray-800 text-xs">
             {WEEKDAY_LABELS.map((label) => (
               <div key={label} className="bg-gray-800 px-2 py-2 text-center font-medium uppercase tracking-wide text-gray-500">
@@ -636,7 +636,7 @@ export function CalendarPage() {
             })}
           </div>
 
-          <div className="w-72 shrink-0 rounded-lg border border-gray-800 p-4">
+          <div className="w-full shrink-0 rounded-lg border border-gray-800 p-4 lg:w-72">
             {selectedDate ? (
               <>
                 <div className="flex items-center justify-between">

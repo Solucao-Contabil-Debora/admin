@@ -11,9 +11,18 @@ import { AnnouncementsPage } from './pages/AnnouncementsPage'
 import { RequestsPage } from './pages/RequestsPage'
 import { DocumentsPage } from './pages/DocumentsPage'
 
+function MenuIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function App() {
   const { session, isAdmin, loading, signIn, signOut } = useAuth()
   const [activeView, setActiveView] = useState<NavKey>('users')
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   if (loading) {
     return (
@@ -42,8 +51,8 @@ function App() {
 
   if (!isAdmin) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-gray-950">
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-8 text-center shadow-sm">
+      <div className="flex min-h-svh items-center justify-center bg-gray-950 p-4">
+        <div className="w-full max-w-sm rounded-lg border border-gray-800 bg-gray-900 p-8 text-center shadow-sm">
           <h1 className="text-xl font-semibold text-gray-100">Acesso negado</h1>
           <p className="mt-2 text-sm text-gray-400">
             Esta conta não tem permissão de admin.
@@ -66,14 +75,28 @@ function App() {
         onNavigate={setActiveView}
         userEmail={session.user.email ?? ''}
         onSignOut={signOut}
+        mobileOpen={mobileNavOpen}
+        onCloseMobile={() => setMobileNavOpen(false)}
       />
-      <main className="flex-1 p-8">
-        {activeView === 'users' && <UsersPage />}
-        {activeView === 'calendar' && <CalendarPage />}
-        {activeView === 'announcements' && <AnnouncementsPage />}
-        {activeView === 'requests' && <RequestsPage />}
-        {activeView === 'documents' && <DocumentsPage />}
-      </main>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-center gap-3 border-b border-gray-800 px-4 py-3 md:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(true)}
+            className="rounded-md p-1.5 text-gray-400 hover:bg-gray-800"
+          >
+            <MenuIcon className="h-5 w-5" />
+          </button>
+          <img src={logo} alt="Solução Contábil" className="h-7 w-auto object-contain" />
+        </div>
+        <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">
+          {activeView === 'users' && <UsersPage />}
+          {activeView === 'calendar' && <CalendarPage />}
+          {activeView === 'announcements' && <AnnouncementsPage />}
+          {activeView === 'requests' && <RequestsPage />}
+          {activeView === 'documents' && <DocumentsPage />}
+        </main>
+      </div>
     </div>
   )
 }

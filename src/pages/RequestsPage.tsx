@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 import { displayNameFromEmail } from '../lib/displayName'
 import { extractErrorMessage } from '../lib/functionErrors'
 import { Dialog } from '../components/Dialog'
+import { ActionMenu } from '../components/ActionMenu'
 
 type IconProps = {
   className?: string
@@ -59,16 +60,6 @@ function DownloadIcon({ className }: IconProps) {
     <svg viewBox="0 0 24 24" fill="none" className={className}>
       <path d="M12 4v11.5M8 12l4 4 4-4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M4.5 17.5V19a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function MoreIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <circle cx="12" cy="5" r="1.6" />
-      <circle cx="12" cy="12" r="1.6" />
-      <circle cx="12" cy="19" r="1.6" />
     </svg>
   )
 }
@@ -237,7 +228,6 @@ export function RequestsPage() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
 
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingRequest, setEditingRequest] = useState<RequestItem | null>(null)
@@ -494,17 +484,17 @@ export function RequestsPage() {
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-100">Solicitações</h2>
           <p className="mt-1 text-sm text-gray-400">{totalRequests} no total</p>
-          <div className="mt-3 flex items-center gap-5 text-sm text-gray-400">
+          <div className="mt-3 flex flex-wrap items-center gap-5 text-sm text-gray-400">
             <span className="flex items-center gap-1.5">
-              <InboxStatIcon className="h-4 w-4 text-primary-400" />
+              <InboxStatIcon className="h-4 w-4 text-gray-500" />
               {totalRequests} solicitações
             </span>
             <span className="flex items-center gap-1.5">
-              <CheckStatIcon className="h-4 w-4 text-primary-400" />
+              <CheckStatIcon className="h-4 w-4 text-gray-500" />
               {totalResponses} respostas recebidas
             </span>
           </div>
@@ -542,19 +532,19 @@ export function RequestsPage() {
           </button>
         </div>
 
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <input
             type="text"
             value={search}
             onChange={(event) => handleSearchChange(event.target.value)}
             placeholder="Buscar solicitação..."
-            className="w-64 rounded-lg border border-gray-800 bg-gray-800 py-2 pl-9 pr-3 text-sm focus:border-gray-600 focus:outline-none"
+            className="w-full rounded-lg border border-gray-800 bg-gray-800 py-2 pl-9 pr-3 text-sm focus:border-gray-600 focus:outline-none sm:w-64"
           />
         </div>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-gray-800 bg-gray-900">
+      <div className="mt-4 rounded-lg border border-gray-800 bg-gray-900">
         {loadError && (
           <div className="flex items-center justify-between p-4 text-sm text-red-400">
             {loadError}
@@ -567,6 +557,7 @@ export function RequestsPage() {
         {!loadError && requests === null && <p className="p-6 text-sm text-gray-500">Carregando...</p>}
 
         {!loadError && requests !== null && (
+          <div className="overflow-x-auto overflow-y-visible">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-gray-800 text-xs uppercase tracking-wide text-gray-500">
@@ -605,42 +596,12 @@ export function RequestsPage() {
                     {targetCount(request, totalClients)} enviaram
                   </td>
                   <td className="px-4 py-3" onClick={(event) => event.stopPropagation()}>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => setOpenMenuId(openMenuId === request.id ? null : request.id)}
-                        className="rounded-md p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-400"
-                      >
-                        <MoreIcon className="h-4 w-4" />
-                      </button>
-                      {openMenuId === request.id && (
-                        <>
-                          <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
-                          <div className="absolute right-0 z-20 mt-1 w-32 rounded-md border border-gray-800 bg-gray-900 py-1 shadow-lg">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setOpenMenuId(null)
-                                openEditModal(request)
-                              }}
-                              className="w-full px-3 py-2 text-left text-sm text-gray-300 hover:bg-gray-800"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setOpenMenuId(null)
-                                handleDelete(request)
-                              }}
-                              className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-gray-800"
-                            >
-                              Excluir
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
+                    <ActionMenu
+                      items={[
+                        { label: 'Editar', onClick: () => openEditModal(request) },
+                        { label: 'Excluir', onClick: () => handleDelete(request), danger: true },
+                      ]}
+                    />
                   </td>
                 </tr>
               ))}
@@ -653,6 +614,7 @@ export function RequestsPage() {
               )}
             </tbody>
           </table>
+          </div>
         )}
 
         {!loadError && requests !== null && (

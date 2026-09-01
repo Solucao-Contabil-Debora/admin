@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 import { displayNameFromEmail } from '../lib/displayName'
 import { extractErrorMessage } from '../lib/functionErrors'
 import { Dialog } from '../components/Dialog'
+import { ActionMenu } from '../components/ActionMenu'
 
 type IconProps = {
   className?: string
@@ -63,16 +64,6 @@ function TrashIcon({ className }: IconProps) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-    </svg>
-  )
-}
-
-function MoreIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <circle cx="12" cy="5" r="1.6" />
-      <circle cx="12" cy="12" r="1.6" />
-      <circle cx="12" cy="19" r="1.6" />
     </svg>
   )
 }
@@ -224,7 +215,6 @@ export function DocumentsPage() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
 
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingDocument, setEditingDocument] = useState<SentDocument | null>(null)
@@ -491,17 +481,17 @@ export function DocumentsPage() {
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-100">Documentos</h2>
           <p className="mt-1 text-sm text-gray-400">Envio e recebimento de arquivos com clientes</p>
-          <div className="mt-3 flex items-center gap-5 text-sm text-gray-400">
+          <div className="mt-3 flex flex-wrap items-center gap-5 text-sm text-gray-400">
             <span className="flex items-center gap-1.5">
-              <UploadStatIcon className="h-4 w-4 text-primary-400" />
+              <UploadStatIcon className="h-4 w-4 text-gray-500" />
               {totalSent} enviados
             </span>
             <span className="flex items-center gap-1.5">
-              <DownloadStatIcon className="h-4 w-4 text-primary-400" />
+              <DownloadStatIcon className="h-4 w-4 text-gray-500" />
               {totalReceived} recebidos
             </span>
           </div>
@@ -541,21 +531,21 @@ export function DocumentsPage() {
           </button>
         </div>
 
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <input
             type="text"
             value={search}
             onChange={(event) => handleSearchChange(event.target.value)}
             placeholder={tab === 'sent' ? 'Buscar documento...' : 'Buscar arquivo ou cliente...'}
-            className="w-64 rounded-lg border border-gray-800 bg-gray-800 py-2 pl-9 pr-3 text-sm focus:border-gray-600 focus:outline-none"
+            className="w-full rounded-lg border border-gray-800 bg-gray-800 py-2 pl-9 pr-3 text-sm focus:border-gray-600 focus:outline-none sm:w-64"
           />
         </div>
       </div>
 
       {downloadError && <p className="mt-3 text-sm text-red-400">{downloadError}</p>}
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-gray-800 bg-gray-900">
+      <div className="mt-4 rounded-lg border border-gray-800 bg-gray-900">
         {tab === 'sent' && sentError && (
           <div className="flex items-center justify-between p-4 text-sm text-red-400">
             {sentError}
@@ -568,6 +558,7 @@ export function DocumentsPage() {
         {tab === 'sent' && !sentError && sentDocuments === null && <p className="p-6 text-sm text-gray-500">Carregando...</p>}
 
         {tab === 'sent' && !sentError && sentDocuments !== null && (
+          <div className="overflow-x-auto overflow-y-visible">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-gray-800 text-xs uppercase tracking-wide text-gray-500">
@@ -589,7 +580,7 @@ export function DocumentsPage() {
                   <td className="px-4 py-3 text-gray-400">{audienceLabel(document)}</td>
                   <td className="px-4 py-3 text-gray-400">{formatDateTime(document.createdAt)}</td>
                   <td className="px-4 py-3">
-                    <div className="relative flex items-center gap-1">
+                    <div className="flex items-center gap-1">
                       <button
                         type="button"
                         onClick={() => handleDownload(document.filePath)}
@@ -599,40 +590,12 @@ export function DocumentsPage() {
                       >
                         <DownloadIcon className="h-4 w-4" />
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setOpenMenuId(openMenuId === document.id ? null : document.id)}
-                        className="rounded-md p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-400"
-                      >
-                        <MoreIcon className="h-4 w-4" />
-                      </button>
-                      {openMenuId === document.id && (
-                        <>
-                          <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
-                          <div className="absolute right-0 top-full z-20 mt-1 w-32 rounded-md border border-gray-800 bg-gray-900 py-1 shadow-lg">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setOpenMenuId(null)
-                                openEditModal(document)
-                              }}
-                              className="w-full px-3 py-2 text-left text-sm text-gray-300 hover:bg-gray-800"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setOpenMenuId(null)
-                                handleDeleteSent(document)
-                              }}
-                              className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-gray-800"
-                            >
-                              Excluir
-                            </button>
-                          </div>
-                        </>
-                      )}
+                      <ActionMenu
+                        items={[
+                          { label: 'Editar', onClick: () => openEditModal(document) },
+                          { label: 'Excluir', onClick: () => handleDeleteSent(document), danger: true },
+                        ]}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -646,6 +609,7 @@ export function DocumentsPage() {
               )}
             </tbody>
           </table>
+          </div>
         )}
 
         {tab === 'received' && receivedError && (
@@ -671,6 +635,7 @@ export function DocumentsPage() {
         )}
 
         {tab === 'received' && !receivedError && !clientsError && receivedUploads !== null && clients !== null && (
+          <div className="overflow-x-auto overflow-y-visible">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-gray-800 text-xs uppercase tracking-wide text-gray-500">
@@ -732,6 +697,7 @@ export function DocumentsPage() {
               )}
             </tbody>
           </table>
+          </div>
         )}
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-800 px-4 py-3 text-sm text-gray-400">

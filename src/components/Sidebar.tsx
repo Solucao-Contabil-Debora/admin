@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { displayNameFromEmail } from '../lib/displayName'
 import logo from '../assets/logo.png'
@@ -39,16 +39,17 @@ function UsersIcon({ className }: IconProps) {
   )
 }
 
-function BellIcon({ className }: IconProps) {
+function LogOutIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className}>
       <path
-        d="M12 3.5c-2.9 0-5 2.3-5 5.2v3.1c0 .6-.2 1.2-.6 1.7l-.9 1.1c-.6.8 0 1.9 1 1.9h11c1 0 1.6-1.1 1-1.9l-.9-1.1c-.4-.5-.6-1.1-.6-1.7V8.7c0-2.9-2.1-5.2-5-5.2Z"
+        d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"
         stroke="currentColor"
         strokeWidth="1.75"
+        strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+      <path d="M15 16l4-4-4-4M19 12H9" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -129,93 +130,171 @@ const NAV_ITEMS: NavItem[] = [
   { key: 'documents', label: 'Documentos', icon: FolderIcon },
 ]
 
+function XIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function ChevronUpIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="m6 15 6-6 6 6" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 type SidebarProps = {
   activeView: NavKey
   onNavigate: (view: NavKey) => void
   userEmail: string
   onSignOut: () => void
+  mobileOpen: boolean
+  onCloseMobile: () => void
 }
 
-export function Sidebar({ activeView, onNavigate, userEmail, onSignOut }: SidebarProps) {
+export function Sidebar({ activeView, onNavigate, userEmail, onSignOut, mobileOpen, onCloseMobile }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const displayName = displayNameFromEmail(userEmail)
 
+  function handleNavigate(view: NavKey) {
+    onNavigate(view)
+    onCloseMobile()
+    setMenuOpen(false)
+  }
+
+  useEffect(() => {
+    if (!menuOpen) return
+
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setMenuOpen(false)
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [menuOpen])
+
   return (
-    <aside
-      className={`flex h-svh flex-col justify-between border-r border-sidebar-800 bg-sidebar-900 transition-[width] duration-200 ${
-        collapsed ? 'w-[72px]' : 'w-60'
-      }`}
-    >
-      <div>
-        <div className="flex items-center justify-between gap-2 px-4 py-5">
-          <div className="flex items-center gap-2 overflow-hidden">
-            {collapsed ? (
-              <div className="h-8 w-8 shrink-0 overflow-hidden rounded">
-                <img src={logo} alt="Solução Contábil" className="h-8 w-auto max-w-none" />
-              </div>
-            ) : (
-              <img src={logo} alt="Solução Contábil" className="h-9 w-auto max-w-full object-contain" />
-            )}
+    <>
+      {mobileOpen && <div className="fixed inset-0 z-40 bg-gray-950/60 md:hidden" onClick={onCloseMobile} />}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex h-svh w-64 flex-col justify-between border-r border-sidebar-800 bg-sidebar-900 transition-transform duration-200 md:static md:z-auto md:translate-x-0 md:transition-[width] ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        } ${collapsed ? 'md:w-[72px]' : 'md:w-60'}`}
+      >
+        <div>
+          <div className="flex items-center justify-between gap-2 px-4 py-5">
+            <div className="flex items-center gap-2 overflow-hidden">
+              {collapsed ? (
+                <div className="hidden h-8 w-8 shrink-0 overflow-hidden rounded md:block">
+                  <img src={logo} alt="Solução Contábil" className="h-8 w-auto max-w-none" />
+                </div>
+              ) : (
+                <img src={logo} alt="Solução Contábil" className="h-9 w-auto max-w-full object-contain" />
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setCollapsed((value) => !value)}
+              title={collapsed ? 'Expandir menu' : 'Recolher menu'}
+              className="hidden shrink-0 cursor-pointer rounded-md p-1.5 text-sidebar-500 hover:bg-sidebar-800 hover:text-sidebar-300 md:block"
+            >
+              <PanelIcon className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={onCloseMobile}
+              title="Fechar menu"
+              className="shrink-0 cursor-pointer rounded-md p-1.5 text-sidebar-500 hover:bg-sidebar-800 hover:text-sidebar-300 md:hidden"
+            >
+              <XIcon className="h-5 w-5" />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setCollapsed((value) => !value)}
-            title={collapsed ? 'Expandir menu' : 'Recolher menu'}
-            className="shrink-0 rounded-md p-1.5 text-sidebar-500 hover:bg-sidebar-800 hover:text-sidebar-300"
-          >
-            <PanelIcon className="h-5 w-5" />
-          </button>
+
+          <nav className="space-y-1 px-3">
+            {NAV_ITEMS.map((item) => {
+              const isActive = activeView === item.key
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => handleNavigate(item.key)}
+                  title={item.label}
+                  className={`flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium ${
+                    collapsed ? 'md:justify-center' : ''
+                  } ${isActive ? 'bg-primary-950 text-primary-400' : 'text-sidebar-400 hover:bg-sidebar-800'}`}
+                >
+                  <item.icon className="h-5 w-5 shrink-0" />
+                  <span className={collapsed ? 'md:hidden' : ''}>{item.label}</span>
+                </button>
+              )
+            })}
+          </nav>
         </div>
 
-        <nav className="space-y-1 px-3">
-          {NAV_ITEMS.map((item) => {
-            const isActive = activeView === item.key
-            return (
+        <div ref={menuRef} className="relative border-t border-sidebar-800 p-3">
+          {menuOpen && (
+            <div
+              role="menu"
+              className={`absolute inset-x-3 bottom-full mb-2 overflow-hidden rounded-lg border border-sidebar-800 bg-sidebar-900 shadow-lg [animation:dialog-panel_0.15s_ease-out] ${
+                collapsed ? 'md:inset-x-auto md:bottom-0 md:left-full md:mb-0 md:ml-2 md:w-48' : ''
+              }`}
+            >
+              <div className="border-b border-sidebar-800 px-3 py-2.5">
+                <p className="truncate text-sm font-medium text-sidebar-100">{displayName}</p>
+                <p className="truncate text-xs text-sidebar-400">{userEmail}</p>
+              </div>
               <button
-                key={item.key}
                 type="button"
-                onClick={() => onNavigate(item.key)}
-                title={item.label}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium ${
-                  collapsed ? 'justify-center' : ''
-                } ${isActive ? 'bg-primary-950 text-primary-400' : 'text-sidebar-400 hover:bg-sidebar-800'}`}
+                role="menuitem"
+                onClick={onSignOut}
+                className="flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-sm font-medium text-red-400 hover:bg-sidebar-800"
               >
-                <item.icon className="h-5 w-5 shrink-0" />
-                {!collapsed && <span>{item.label}</span>}
+                <LogOutIcon className="h-4 w-4 shrink-0" />
+                Sair
               </button>
-            )
-          })}
-        </nav>
-      </div>
+            </div>
+          )}
 
-      <div className="border-t border-sidebar-800 p-3">
-        <div className={`flex items-center gap-2 ${collapsed ? 'justify-center' : 'justify-between'}`}>
           <button
             type="button"
-            onClick={onSignOut}
-            title="Sair"
-            className={`flex min-w-0 items-center gap-2 rounded-lg p-1 hover:bg-sidebar-800 ${
-              collapsed ? '' : 'flex-1'
+            onClick={() => setMenuOpen((value) => !value)}
+            title={displayName}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            className={`flex w-full cursor-pointer items-center gap-2 rounded-lg p-1 hover:bg-sidebar-800 ${
+              collapsed ? 'md:justify-center' : ''
             }`}
           >
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-900 text-sm font-semibold text-primary-300">
               {displayName.charAt(0).toUpperCase()}
             </span>
-            {!collapsed && (
-              <span className="min-w-0 text-left">
-                <p className="truncate text-sm font-medium text-sidebar-100">{displayName}</p>
-                <p className="truncate text-xs text-sidebar-400">{userEmail}</p>
-              </span>
-            )}
-          </button>
-
-          {!collapsed && (
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-sidebar-800 text-sidebar-500">
-              <BellIcon className="h-4 w-4" />
+            <span className={`min-w-0 text-left ${collapsed ? 'md:hidden' : ''}`}>
+              <p className="truncate text-sm font-medium text-sidebar-100">{displayName}</p>
+              <p className="truncate text-xs text-sidebar-400">{userEmail}</p>
             </span>
-          )}
+            <ChevronUpIcon
+              className={`h-4 w-4 shrink-0 text-sidebar-500 transition-transform ${collapsed ? 'md:hidden' : ''} ${
+                menuOpen ? '' : 'rotate-180'
+              }`}
+            />
+          </button>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   )
 }

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 import { displayNameFromEmail } from '../lib/displayName'
 import { extractErrorMessage } from '../lib/functionErrors'
 import { Dialog } from '../components/Dialog'
+import { ActionMenu } from '../components/ActionMenu'
 
 type IconProps = {
   className?: string
@@ -51,16 +52,6 @@ function CalendarStatIcon({ className }: IconProps) {
       <rect x="3.5" y="5" width="17" height="15" rx="2.5" stroke="currentColor" strokeWidth="1.75" />
       <path d="M3.5 9.5h17" stroke="currentColor" strokeWidth="1.75" />
       <path d="M8 3v3.5M16 3v3.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function MoreIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <circle cx="12" cy="5" r="1.6" />
-      <circle cx="12" cy="12" r="1.6" />
-      <circle cx="12" cy="19" r="1.6" />
     </svg>
   )
 }
@@ -200,7 +191,6 @@ export function AnnouncementsPage() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
 
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null)
@@ -403,17 +393,17 @@ export function AnnouncementsPage() {
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-100">Comunicados</h2>
           <p className="mt-1 text-sm text-gray-400">{totalAnnouncements} no total</p>
-          <div className="mt-3 flex items-center gap-5 text-sm text-gray-400">
+          <div className="mt-3 flex flex-wrap items-center gap-5 text-sm text-gray-400">
             <span className="flex items-center gap-1.5">
-              <MegaphoneStatIcon className="h-4 w-4 text-primary-400" />
+              <MegaphoneStatIcon className="h-4 w-4 text-gray-500" />
               {totalAnnouncements} comunicados
             </span>
             <span className="flex items-center gap-1.5">
-              <CalendarStatIcon className="h-4 w-4 text-primary-400" />
+              <CalendarStatIcon className="h-4 w-4 text-gray-500" />
               {totalScheduled} agendados
             </span>
           </div>
@@ -451,19 +441,19 @@ export function AnnouncementsPage() {
           </button>
         </div>
 
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <input
             type="text"
             value={search}
             onChange={(event) => handleSearchChange(event.target.value)}
             placeholder="Buscar comunicado..."
-            className="w-64 rounded-lg border border-gray-800 bg-gray-800 py-2 pl-9 pr-3 text-sm focus:border-gray-600 focus:outline-none"
+            className="w-full rounded-lg border border-gray-800 bg-gray-800 py-2 pl-9 pr-3 text-sm focus:border-gray-600 focus:outline-none sm:w-64"
           />
         </div>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-gray-800 bg-gray-900">
+      <div className="mt-4 rounded-lg border border-gray-800 bg-gray-900">
         {loadError && (
           <div className="flex items-center justify-between p-4 text-sm text-red-400">
             {loadError}
@@ -476,6 +466,7 @@ export function AnnouncementsPage() {
         {!loadError && announcements === null && <p className="p-6 text-sm text-gray-500">Carregando...</p>}
 
         {!loadError && announcements !== null && (
+          <div className="overflow-x-auto overflow-y-visible">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-gray-800 text-xs uppercase tracking-wide text-gray-500">
@@ -508,42 +499,12 @@ export function AnnouncementsPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-400">{audienceLabel(announcement)}</td>
                   <td className="px-4 py-3">
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => setOpenMenuId(openMenuId === announcement.id ? null : announcement.id)}
-                        className="rounded-md p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-400"
-                      >
-                        <MoreIcon className="h-4 w-4" />
-                      </button>
-                      {openMenuId === announcement.id && (
-                        <>
-                          <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
-                          <div className="absolute right-0 z-20 mt-1 w-32 rounded-md border border-gray-800 bg-gray-900 py-1 shadow-lg">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setOpenMenuId(null)
-                                openEditModal(announcement)
-                              }}
-                              className="w-full px-3 py-2 text-left text-sm text-gray-300 hover:bg-gray-800"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setOpenMenuId(null)
-                                handleDelete(announcement)
-                              }}
-                              className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-gray-800"
-                            >
-                              Excluir
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
+                    <ActionMenu
+                      items={[
+                        { label: 'Editar', onClick: () => openEditModal(announcement) },
+                        { label: 'Excluir', onClick: () => handleDelete(announcement), danger: true },
+                      ]}
+                    />
                   </td>
                 </tr>
               ))}
@@ -556,6 +517,7 @@ export function AnnouncementsPage() {
               )}
             </tbody>
           </table>
+          </div>
         )}
 
         {!loadError && announcements !== null && (

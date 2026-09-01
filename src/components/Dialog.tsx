@@ -1,5 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
+
+const CLOSE_DURATION = 180
 
 type MaxWidth = 'sm' | 'md' | 'lg' | 'xl'
 
@@ -29,6 +31,26 @@ type DialogProps = {
 }
 
 export function Dialog({ open, onClose, title, description, maxWidth = 'sm', stacked = false, children }: DialogProps) {
+  const [visible, setVisible] = useState(open)
+  const [closing, setClosing] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      setVisible(true)
+      setClosing(false)
+      return
+    }
+    if (visible) {
+      setClosing(true)
+      const timeout = setTimeout(() => {
+        setVisible(false)
+        setClosing(false)
+      }, CLOSE_DURATION)
+      return () => clearTimeout(timeout)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
   useEffect(() => {
     if (!open) return
 
@@ -40,18 +62,20 @@ export function Dialog({ open, onClose, title, description, maxWidth = 'sm', sta
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [open, onClose])
 
-  if (!open) return null
+  if (!visible) return null
 
   return (
     <div
       onClick={onClose}
-      className={`fixed inset-0 flex items-center justify-center bg-gray-900/50 px-4 py-8 backdrop-blur-[2px] [animation:dialog-overlay_0.15s_ease-out] ${
-        stacked ? 'z-40' : 'z-30'
-      }`}
+      className={`fixed inset-0 flex items-center justify-center bg-gray-950/70 px-4 py-8 backdrop-blur-[2px] ${
+        closing ? '[animation:dialog-overlay-out_0.15s_ease-in_forwards]' : '[animation:dialog-overlay_0.15s_ease-out]'
+      } ${stacked ? 'z-40' : 'z-30'}`}
     >
       <div
         onClick={(event) => event.stopPropagation()}
-        className={`flex max-h-full w-full ${MAX_WIDTH_CLASSES[maxWidth]} flex-col overflow-hidden rounded-2xl bg-gray-900 shadow-2xl ring-1 ring-white/10 [animation:dialog-panel_0.18s_ease-out]`}
+        className={`flex max-h-full w-full ${MAX_WIDTH_CLASSES[maxWidth]} flex-col overflow-hidden rounded-2xl bg-gray-900 shadow-2xl ring-1 ring-white/10 ${
+          closing ? '[animation:dialog-panel-out_0.18s_ease-in_forwards]' : '[animation:dialog-panel_0.18s_ease-out]'
+        }`}
       >
         <div className="flex items-start justify-between gap-4 border-b border-gray-800 px-6 py-4">
           <div className="min-w-0">
