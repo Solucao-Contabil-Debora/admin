@@ -127,7 +127,7 @@ type SentDocumentRow = {
   file_name: string
   audience_type: string
   created_at: string
-  ged_document_clients: { client_id: string }[]
+  gep_document_clients: { client_id: string }[]
 }
 
 type ReceivedUpload = {
@@ -162,7 +162,7 @@ function mapSentDocumentRow(row: SentDocumentRow): SentDocument {
     filePath: row.file_path,
     fileName: row.file_name,
     audienceType: row.audience_type as AudienceType,
-    targetClientIds: row.ged_document_clients.map((client) => client.client_id),
+    targetClientIds: row.gep_document_clients.map((client) => client.client_id),
     createdAt: row.created_at,
   }
 }
@@ -233,8 +233,8 @@ export function DocumentsPage() {
   async function loadSentDocuments() {
     setSentError(null)
     const { data, error } = await supabase
-      .from('ged_documents')
-      .select('id, title, description, file_path, file_name, audience_type, created_at, ged_document_clients(client_id)')
+      .from('gep_documents')
+      .select('id, title, description, file_path, file_name, audience_type, created_at, gep_document_clients(client_id)')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -247,7 +247,7 @@ export function DocumentsPage() {
   async function loadReceivedUploads() {
     setReceivedError(null)
     const { data, error } = await supabase
-      .from('ged_uploads')
+      .from('gep_uploads')
       .select('id, client_id, file_path, file_name, uploaded_at')
       .order('uploaded_at', { ascending: false })
 
@@ -383,14 +383,14 @@ export function DocumentsPage() {
 
     if (selectedFile) {
       const path = `sent/${crypto.randomUUID()}-${selectedFile.name}`
-      const { error: uploadError } = await supabase.storage.from('ged-files').upload(path, selectedFile)
+      const { error: uploadError } = await supabase.storage.from('gep-files').upload(path, selectedFile)
       if (uploadError) {
         setFormError(uploadError.message)
         setSubmitting(false)
         return
       }
       if (editingDocument) {
-        await supabase.storage.from('ged-files').remove([editingDocument.filePath])
+        await supabase.storage.from('gep-files').remove([editingDocument.filePath])
       }
       filePath = path
       fileName = selectedFile.name
@@ -407,14 +407,14 @@ export function DocumentsPage() {
     let documentId = editingDocument?.id ?? null
 
     if (documentId) {
-      const { error } = await supabase.from('ged_documents').update(payload).eq('id', documentId)
+      const { error } = await supabase.from('gep_documents').update(payload).eq('id', documentId)
       if (error) {
         setFormError(error.message)
         setSubmitting(false)
         return
       }
     } else {
-      const { data, error } = await supabase.from('ged_documents').insert(payload).select('id').single()
+      const { data, error } = await supabase.from('gep_documents').insert(payload).select('id').single()
       if (error) {
         setFormError(error.message)
         setSubmitting(false)
@@ -423,7 +423,7 @@ export function DocumentsPage() {
       documentId = data.id
     }
 
-    const { error: deleteClientsError } = await supabase.from('ged_document_clients').delete().eq('document_id', documentId)
+    const { error: deleteClientsError } = await supabase.from('gep_document_clients').delete().eq('document_id', documentId)
     if (deleteClientsError) {
       setFormError(deleteClientsError.message)
       setSubmitting(false)
@@ -432,7 +432,7 @@ export function DocumentsPage() {
 
     if (audienceType !== 'all') {
       const audienceRows = audienceClientIds.map((clientId) => ({ document_id: documentId, client_id: clientId }))
-      const { error: insertClientsError } = await supabase.from('ged_document_clients').insert(audienceRows)
+      const { error: insertClientsError } = await supabase.from('gep_document_clients').insert(audienceRows)
       if (insertClientsError) {
         setFormError(insertClientsError.message)
         setSubmitting(false)
@@ -447,8 +447,8 @@ export function DocumentsPage() {
 
   async function handleDeleteSent(document: SentDocument) {
     if (!window.confirm(`Excluir o documento "${document.title}"?`)) return
-    await supabase.storage.from('ged-files').remove([document.filePath])
-    const { error } = await supabase.from('ged_documents').delete().eq('id', document.id)
+    await supabase.storage.from('gep-files').remove([document.filePath])
+    const { error } = await supabase.from('gep_documents').delete().eq('id', document.id)
     if (error) {
       setSentError(error.message)
       return
@@ -458,8 +458,8 @@ export function DocumentsPage() {
 
   async function handleDeleteReceived(upload: ReceivedUpload) {
     if (!window.confirm(`Excluir o arquivo "${upload.fileName}"?`)) return
-    await supabase.storage.from('ged-files').remove([upload.filePath])
-    const { error } = await supabase.from('ged_uploads').delete().eq('id', upload.id)
+    await supabase.storage.from('gep-files').remove([upload.filePath])
+    const { error } = await supabase.from('gep_uploads').delete().eq('id', upload.id)
     if (error) {
       setReceivedError(error.message)
       return
@@ -470,7 +470,7 @@ export function DocumentsPage() {
   async function handleDownload(path: string) {
     setDownloadError(null)
     setDownloadingPath(path)
-    const { data, error } = await supabase.storage.from('ged-files').createSignedUrl(path, 60)
+    const { data, error } = await supabase.storage.from('gep-files').createSignedUrl(path, 60)
     setDownloadingPath(null)
     if (error || !data) {
       setDownloadError('Erro ao gerar link do arquivo.')

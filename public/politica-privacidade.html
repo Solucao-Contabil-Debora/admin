@@ -45,104 +45,176 @@
       }
       h1 { font-size: 1.75rem; margin: 0 0 8px; }
       h2 { font-size: 1.125rem; margin: 0 0 8px; }
-      p, li { color: var(--muted); }
+      h3 { font-size: 1rem; margin: 16px 0 0; }
+      p, li, td { color: var(--muted); }
       ol, ul { padding-left: 20px; margin: 8px 0 0; }
       a { color: inherit; font-weight: 600; }
+      table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.9375rem; }
+      th, td { text-align: left; padding: 8px 8px 8px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+      th { font-weight: 600; }
       footer { margin-top: 32px; font-size: 0.875rem; color: var(--muted); }
     </style>
   </head>
   <body>
     <main>
       <h1>Política de Privacidade — Solução Contábil</h1>
-      <p><strong>Última atualização:</strong> 12 de agosto de 2026</p>
+      <p><strong>Última atualização:</strong> 9 de novembro de 2026</p>
+      <p>
+        Esta política explica quais dados o aplicativo <strong>Solução Contábil</strong> trata, para quê, com quem
+        são compartilhados e como você pode exercer seus direitos, conforme a Lei Geral de Proteção de Dados
+        (Lei nº 13.709/2018 — LGPD).
+      </p>
+      <p>
+        O app é um canal de atendimento exclusivo para clientes do escritório Solução Contábil. As contas são
+        criadas pelo escritório; não é possível se cadastrar pelo app.
+      </p>
 
       <section>
-        <h2>1. Controlador dos dados</h2>
+        <h2>1. Quem é o responsável pelos seus dados</h2>
         <p>
           <strong>Solução Contábil Prestação de Serviços de Contabilidade Ltda</strong><br />
           CNPJ: 17.515.116/0001-66<br />
-          E-mail de contato: <a href="mailto:solucaocontabil.contato@gmail.com">solucaocontabil.contato@gmail.com</a>
+          E-mail: <a href="mailto:solucaocontabil.contato@gmail.com">solucaocontabil.contato@gmail.com</a>
+        </p>
+        <p>Este mesmo e-mail é o canal de contato com o encarregado pelo tratamento de dados pessoais.</p>
+      </section>
+
+      <section>
+        <h2>2. Quais dados tratamos</h2>
+
+        <h3>Dados que o escritório cadastra</h3>
+        <ul>
+          <li>
+            <strong>E-mail e senha</strong> de acesso. A senha é guardada de forma criptografada (hash): nem o
+            escritório consegue vê-la.
+          </li>
+        </ul>
+
+        <h3>Dados que você envia pelo app</h3>
+        <ul>
+          <li><strong>Arquivos do GEP</strong>: documentos que você envia na área GEP (Gestão Eletrônica de Processos).</li>
+          <li><strong>Respostas a solicitações</strong>: textos, datas e arquivos que você envia para atender pendências do escritório.</li>
+          <li><strong>Anotações no calendário</strong>: anotações que você cria, edita ou exclui.</li>
+          <li><strong>Pedido de exclusão de conta</strong>: a data do pedido e o motivo, se você informar.</li>
+        </ul>
+
+        <h3>Dados gerados pelo uso</h3>
+        <ul>
+          <li><strong>Leitura de comunicados</strong>: quais comunicados você abriu e quando, para mostrar o que ainda não foi lido.</li>
+        </ul>
+
+        <h3>O que não coletamos</h3>
+        <p>
+          O app não coleta localização, contatos, fotos, câmera, microfone ou biometria. O acesso a arquivos do
+          aparelho acontece só quando você escolhe um arquivo para enviar. O app não usa ferramentas de
+          publicidade, rastreamento ou análise de comportamento.
         </p>
       </section>
 
       <section>
-        <h2>2. Dados que coletamos</h2>
-        <p>Ao usar o aplicativo Solução Contábil, coletamos:</p>
+        <h2>3. Para que usamos e com qual base legal</h2>
+        <table>
+          <thead>
+            <tr><th>Finalidade</th><th>Base legal (LGPD, art. 7º)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Permitir seu acesso ao app</td><td>Execução de contrato (inciso V)</td></tr>
+            <tr><td>Receber documentos e respostas para prestar o serviço contábil</td><td>Execução de contrato (inciso V)</td></tr>
+            <tr><td>Exibir comunicados, pendências e prazos da sua conta</td><td>Execução de contrato (inciso V)</td></tr>
+            <tr><td>Guardar documentos fiscais, contábeis e trabalhistas pelo prazo legal</td><td>Cumprimento de obrigação legal (inciso II)</td></tr>
+            <tr><td>Manter a segurança do app e prevenir acessos indevidos</td><td>Legítimo interesse (inciso IX)</td></tr>
+          </tbody>
+        </table>
+        <p>Não vendemos, alugamos nem compartilhamos seus dados para fins de marketing.</p>
+      </section>
+
+      <section>
+        <h2>4. Com quem compartilhamos</h2>
         <ul>
-          <li><strong>Dados de conta</strong>: e-mail e senha, usados para autenticação (login).</li>
-          <li><strong>Documentos e arquivos</strong>: arquivos enviados por você através do módulo GEP (Gestão Eletrônica de Processos), armazenados de forma segura para uso do escritório contábil.</li>
-          <li><strong>Solicitações e respostas</strong>: informações que você envia ao responder pendências e solicitações do escritório.</li>
-          <li><strong>Anotações de calendário</strong>: notas e lembretes criados por você dentro do app.</li>
-          <li><strong>Comunicados</strong>: registro de leitura dos avisos enviados pelo escritório.</li>
+          <li><strong>Equipe do escritório</strong>: acessa seus dados apenas para prestar o serviço contratado.</li>
+          <li>
+            <strong>Supabase</strong>: empresa que fornece a infraestrutura onde os dados ficam armazenados (banco de
+            dados, arquivos e autenticação). Ela trata os dados apenas para operar o serviço, seguindo nossas
+            instruções. Os servidores podem estar fora do Brasil; nesse caso, a transferência segue as garantias
+            exigidas pela LGPD (art. 33).
+          </li>
+          <li><strong>Autoridades públicas</strong>: quando houver obrigação legal ou ordem judicial.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>5. Segurança</h2>
+        <ul>
+          <li>Toda comunicação entre o app e o servidor é criptografada (HTTPS).</li>
+          <li>
+            Cada cliente só acessa os próprios dados e o que o escritório direcionou a ele, com regras de acesso
+            aplicadas no próprio banco de dados.
+          </li>
+          <li>A sessão de login fica guardada na área segura do aparelho (Keystore/Keychain).</li>
+          <li>Arquivos são acessados por links temporários, que expiram em 1 minuto.</li>
         </ul>
         <p>
-          Não coletamos localização, não acessamos câmera ou galeria além do necessário para seleção de arquivos,
-          e não utilizamos biometria.
+          Nenhum sistema é totalmente imune a falhas. Se ocorrer um incidente de segurança que possa causar risco ou
+          dano relevante, avisaremos você e a Autoridade Nacional de Proteção de Dados (ANPD), como determina a LGPD.
         </p>
       </section>
 
       <section>
-        <h2>3. Como usamos os dados</h2>
-        <p>Os dados são usados exclusivamente para:</p>
+        <h2>6. Por quanto tempo guardamos</h2>
         <ul>
-          <li>autenticar seu acesso ao aplicativo;</li>
-          <li>permitir a troca de documentos e informações entre você e o escritório contábil;</li>
-          <li>exibir pendências, comunicados e prazos relevantes à sua conta;</li>
-          <li>dar suporte aos serviços contábeis prestados.</li>
+          <li><strong>Enquanto você for cliente</strong>: mantemos os dados da conta e o que você enviou pelo app.</li>
+          <li>
+            <strong>Após a exclusão da conta ou o fim do contrato</strong>: apagamos os dados do app em até 15 dias.
+            Documentos que a lei obriga o escritório a guardar (fiscais, contábeis, trabalhistas e previdenciários)
+            são mantidos pelo prazo legal, em geral de 5 anos ou mais, e depois descartados. Esses documentos deixam
+            de ficar acessíveis pelo app.
+          </li>
         </ul>
-        <p>Não vendemos, alugamos ou compartilhamos seus dados com terceiros para fins de marketing.</p>
       </section>
 
       <section>
-        <h2>4. Armazenamento e segurança</h2>
-        <p>
-          Os dados são armazenados em infraestrutura do Supabase, com autenticação segura e controle de acesso por
-          conta. Adotamos medidas técnicas razoáveis para proteger suas informações contra acesso não autorizado.
-        </p>
-      </section>
-
-      <section>
-        <h2>5. Compartilhamento de dados</h2>
-        <p>
-          Seus dados podem ser acessados pela equipe do escritório contábil responsável pelo atendimento da sua
-          conta, exclusivamente para prestação do serviço contratado.
-        </p>
-      </section>
-
-      <section>
-        <h2>6. Seus direitos (LGPD)</h2>
-        <p>Você pode, a qualquer momento, solicitar:</p>
+        <h2>7. Seus direitos</h2>
+        <p>Pela LGPD (art. 18), você pode pedir:</p>
         <ul>
-          <li>confirmação da existência de tratamento de dados;</li>
-          <li>acesso, correção ou atualização dos seus dados;</li>
-          <li>exclusão de dados, observadas obrigações legais e contratuais de guarda;</li>
-          <li>informações sobre com quem seus dados são compartilhados.</li>
+          <li>confirmação de que tratamos seus dados e acesso a eles;</li>
+          <li>correção de dados incompletos, inexatos ou desatualizados;</li>
+          <li>anonimização, bloqueio ou eliminação de dados desnecessários ou tratados em desacordo com a lei;</li>
+          <li>portabilidade dos dados;</li>
+          <li>informação sobre com quem compartilhamos seus dados;</li>
+          <li>exclusão da conta e dos dados, respeitadas as obrigações legais de guarda.</li>
         </ul>
         <p>
-          Para exercer esses direitos, entre em contato pelo e-mail
-          <a href="mailto:solucaocontabil.contato@gmail.com">solucaocontabil.contato@gmail.com</a>.
-          Para excluir sua conta, veja <a href="/excluir-conta.html">como solicitar a exclusão</a>.
+          Para isso, escreva para
+          <a href="mailto:solucaocontabil.contato@gmail.com">solucaocontabil.contato@gmail.com</a>. Respondemos em
+          até 15 dias. Se não ficar satisfeito, você também pode reclamar à
+          <a href="https://www.gov.br/anpd" target="_blank" rel="noopener">ANPD</a>.
         </p>
       </section>
 
       <section>
-        <h2>7. Retenção de dados</h2>
-        <p>
-          Mantemos seus dados enquanto durar o vínculo contratual com o escritório e pelo prazo exigido por
-          obrigações legais e fiscais aplicáveis à atividade contábil.
-        </p>
+        <h2>8. Como excluir sua conta</h2>
+        <ul>
+          <li><strong>No app</strong>: na tela inicial, toque em <strong>Excluir minha conta</strong>.</li>
+          <li><strong>Pela web</strong>: siga <a href="/excluir-conta.html">estas instruções</a>.</li>
+        </ul>
+        <p>A exclusão é feita em até 15 dias, conforme o item 6.</p>
       </section>
 
       <section>
-        <h2>8. Alterações nesta política</h2>
+        <h2>9. Crianças e adolescentes</h2>
+        <p>O app é destinado a clientes do escritório e não é direcionado a menores de 18 anos.</p>
+      </section>
+
+      <section>
+        <h2>10. Alterações nesta política</h2>
         <p>
-          Esta política pode ser atualizada periodicamente. A data da última atualização estará sempre indicada no
-          topo deste documento.
+          Podemos atualizar esta política. A data da última atualização fica sempre no topo. Mudanças relevantes
+          serão comunicadas pelo app.
         </p>
       </section>
 
       <footer>
-        Dúvidas sobre esta política ou sobre o tratamento dos seus dados:
+        Dúvidas sobre esta política ou sobre seus dados:
         <a href="mailto:solucaocontabil.contato@gmail.com">solucaocontabil.contato@gmail.com</a>
       </footer>
     </main>

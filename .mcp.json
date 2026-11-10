@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "supabase": {
+    "supabase-solucao-contabil": {
       "type": "stdio",
       "command": "npx",
       "args": [
@@ -9,7 +9,7 @@
         "--project-ref=jxiustsrxduetwalsdvp"
       ],
       "env": {
-        "SUPABASE_ACCESS_TOKEN": "${SUPABASE_ACCESS_TOKEN}"
+        "SUPABASE_ACCESS_TOKEN": "${SUPABASE_TOKEN_SOLUCAO_CONTABIL}"
       }
     }
   }
