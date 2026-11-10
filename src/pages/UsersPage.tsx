@@ -88,6 +88,7 @@ type UserRow = {
   email: string
   name: string | null
   isAdmin: boolean
+  deletionRequest: { reason: string | null; createdAt: string } | null
 }
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50]
@@ -107,6 +108,10 @@ export function UsersPage() {
   const [password, setPassword] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+
+  const [userToDelete, setUserToDelete] = useState<UserRow | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   async function loadUsers() {
     setLoadError(null)
@@ -159,6 +164,31 @@ export function UsersPage() {
 
   async function handleCopyEmail(user: UserRow) {
     await navigator.clipboard.writeText(user.email)
+  }
+
+  function openDeleteDialog(user: UserRow) {
+    setDeleteError(null)
+    setUserToDelete(user)
+  }
+
+  async function handleDelete() {
+    if (!userToDelete) return
+    setDeleteError(null)
+    setDeleting(true)
+
+    const { error } = await supabase.functions.invoke('admin-delete-user', {
+      body: { userId: userToDelete.id },
+    })
+
+    if (error) {
+      setDeleteError(await extractErrorMessage(error, 'Erro ao excluir usuário'))
+      setDeleting(false)
+      return
+    }
+
+    setDeleting(false)
+    setUserToDelete(null)
+    await loadUsers()
   }
 
   function openModal() {
@@ -282,6 +312,16 @@ export function UsersPage() {
                         <div className="min-w-0">
                           <p className="truncate font-medium text-gray-100">{name}</p>
                           <p className="truncate text-xs text-gray-400">{user.email}</p>
+                          {user.deletionRequest && (
+                            <p
+                              className="mt-1 text-xs text-red-400"
+                              title={user.deletionRequest.reason ?? undefined}
+                            >
+                              Exclusão solicitada em{' '}
+                              {new Date(user.deletionRequest.createdAt).toLocaleDateString('pt-BR')}
+                              {user.deletionRequest.reason && ` — ${user.deletionRequest.reason}`}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -294,7 +334,15 @@ export function UsersPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <ActionMenu width="w-40" items={[{ label: 'Copiar e-mail', onClick: () => handleCopyEmail(user) }]} />
+                      <ActionMenu
+                        width="w-40"
+                        items={[
+                          { label: 'Copiar e-mail', onClick: () => handleCopyEmail(user) },
+                          ...(user.isAdmin
+                            ? []
+                            : [{ label: 'Excluir conta', onClick: () => openDeleteDialog(user), danger: true }]),
+                        ]}
+                      />
                     </td>
                   </tr>
                 )
@@ -430,6 +478,41 @@ export function UsersPage() {
             </button>
           </div>
         </form>
+      </Dialog>
+
+      <Dialog
+        open={userToDelete !== null}
+        onClose={() => setUserToDelete(null)}
+        title="Excluir conta"
+        description={userToDelete?.email}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-300">
+            O acesso ao app e os dados do usuário (anotações, respostas, vínculos e registros de envio) serão
+            apagados. Os arquivos no armazenamento não são removidos automaticamente. Esta ação não pode ser
+            desfeita.
+          </p>
+
+          {deleteError && <p className="text-sm text-red-400">{deleteError}</p>}
+
+          <div className="flex items-center justify-end gap-2 border-t border-gray-800 pt-4">
+            <button
+              type="button"
+              onClick={() => setUserToDelete(null)}
+              className="rounded-lg border border-gray-700 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {deleting ? 'Excluindo...' : 'Excluir conta'}
+            </button>
+          </div>
+        </div>
       </Dialog>
     </div>
   )

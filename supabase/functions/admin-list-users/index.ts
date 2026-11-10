@@ -43,6 +43,19 @@ Deno.serve(async (req) => {
   }
   const adminIdSet = new Set(adminIds as string[])
 
+  const { data: deletionRequests, error: deletionRequestsError } = await adminClient
+    .from('account_deletion_requests')
+    .select('client_id, reason, created_at')
+  if (deletionRequestsError) {
+    return jsonResponse({ error: deletionRequestsError.message }, 400)
+  }
+  const deletionRequestByUserId = new Map(
+    deletionRequests.map((request) => [
+      request.client_id as string,
+      { reason: request.reason as string | null, createdAt: request.created_at as string },
+    ]),
+  )
+
   const users = []
   let page = 1
   const perPage = 1000
@@ -61,6 +74,7 @@ Deno.serve(async (req) => {
           null,
         createdAt: user.created_at,
         isAdmin: adminIdSet.has(user.id),
+        deletionRequest: deletionRequestByUserId.get(user.id) ?? null,
       })
     }
     if (data.users.length < perPage) break
