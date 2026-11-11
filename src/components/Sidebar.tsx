@@ -108,10 +108,11 @@ export function Sidebar({ activeView, onNavigate, userEmail, onSignOut, mobileOp
                   key={item.key}
                   type="button"
                   onClick={() => handleNavigate(item.key)}
+                  aria-current={isActive ? 'page' : undefined}
                   title={item.label}
                   className={`flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium ${
                     collapsed ? 'md:justify-center' : ''
-                  } ${isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}`}
+                  } ${isActive ? 'bg-sidebar-accent font-semibold text-primary' : 'text-sidebar-foreground hover:bg-sidebar-accent'}`}
                 >
                   <item.icon className="h-5 w-5 shrink-0" />
                   <span className={collapsed ? 'md:hidden' : ''}>{item.label}</span>

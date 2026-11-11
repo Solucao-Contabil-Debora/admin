@@ -29,7 +29,12 @@ type DialogProps = {
 export function Dialog({ open, onClose, title, description, maxWidth = 'sm', children }: DialogProps) {
   return (
     <DialogRoot open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent customWidth="calc(100vw - 2rem)" customMaxWidth={MAX_WIDTHS[maxWidth]} customMaxHeight="90vh">
+      <DialogContent
+        onOpenAutoFocus={(event) => {
+          event.preventDefault()
+          if (event.currentTarget instanceof HTMLElement) event.currentTarget.focus()
+        }}
+        customWidth="calc(100vw - 2rem)" customMaxWidth={MAX_WIDTHS[maxWidth]} customMaxHeight="90vh">
         <DialogHeader showSeparator>
           <DialogTitle>{title}</DialogTitle>
           {description ? <DialogDescription>{description}</DialogDescription> : null}

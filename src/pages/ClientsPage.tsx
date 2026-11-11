@@ -285,13 +285,13 @@ export function ClientsPage() {
 
         {!loadError && clients !== null && (
           <div className="overflow-x-auto">
-            <Table>
+            <Table className="min-w-[640px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Cliente</TableHead>
                   <TableHead>Acesso ao app</TableHead>
                   <TableHead>Notas fiscais</TableHead>
-                  <TableHead>Ações</TableHead>
+                  <TableHead className="w-16">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
