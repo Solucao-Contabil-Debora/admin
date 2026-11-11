@@ -1,29 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@theme {
-  --color-primary-300: #d4d4d8;
-  --color-primary-400: #71717a;
-  --color-primary-500: #52525b;
-  --color-primary-600: #52525b;
-  --color-primary-700: #3f3f46;
-  --color-primary-900: #27272a;
-  --color-primary-950: #18181b;
-
-  /* fundo do sistema: escala "gray" invertida para tema claro */
-  --color-gray-50: #030712;
-  --color-gray-100: #111827;
-  --color-gray-200: #1f2937;
-  --color-gray-300: #374151;
-  --color-gray-400: #4b5563;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #9ca3af;
-  --color-gray-700: #d1d5db;
-  --color-gray-800: #e5e7eb;
-  --color-gray-900: #f3f4f6;
-  --color-gray-950: #f9fafb;
-}
-
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -127,46 +104,6 @@ input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
   -webkit-text-fill-color: hsl(var(--foreground)) !important;
   transition: background-color 5000s ease-in-out 0s;
-}
-
-@keyframes dialog-overlay {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes dialog-panel {
-  from {
-    opacity: 0;
-    transform: translateY(6px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes dialog-overlay-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes dialog-panel-out {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(6px) scale(0.98);
-  }
 }
 
 @keyframes progress-bounce {

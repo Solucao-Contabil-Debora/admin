@@ -94,3 +94,10 @@ Herdam o tema. Classes dependentes da escala `gray` invertida (`text-gray-*`, `b
 - Ajuste Tailwind 3→4 no `ui/sidebar`: `w-[--x]` → `w-(--x)`.
 - `ClientsPage` migrada para `CrudListPage` (filtros "Acesso ao app" e "Sincronização", busca, ordenação, paginação); título e subtítulo vão para o header via `usePageMetadata`.
 - Layout como no ei-app (`showHeader={false}`): sidebar na altura toda e `AppHeader` dentro da área de conteúdo, colado nela, com o menu do usuário nas `actions` do header. As outras 5 páginas rodam dentro do novo layout, ainda com título próprio duplicado ao do header.
+
+## Rodada 3: demais páginas (2026-11-11)
+
+- `UsersPage`, `RequestsPage`, `DocumentsPage` e `AnnouncementsPage` migradas para `CrudListPage` com filtros em chip; `CalendarPage` mantém a grade e usa `CrudActionBarV2` como barra de ações. Todas usam `usePageMetadata` (título/subtítulo no header), componentes `ui` e tokens.
+- Abas viraram chips de filtro: Usuários (Papel), Solicitações (Situação, Tipo), Documentos (Tipo, obrigatório: Enviados/Recebidos), Comunicados (Agendamento, Tipo), Calendário (Cliente).
+- Removidos do tema: escala `gray` invertida, escala `primary-*`, keyframes `dialog-*` e o `logo.png`; a tela "Acesso negado" também usa tokens.
+- Pendências: `ui/textarea` e `ui/radio-group` (hoje `textarea` e radio nativos estilizados nas páginas); o chip de cliente do Calendário busca só pelo nome (antes buscava também por e-mail); título/subtítulo truncam no header em 390px.

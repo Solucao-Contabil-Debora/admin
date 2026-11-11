@@ -1,104 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import { Download, Pencil, Plus, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { displayNameFromEmail } from '../lib/displayName'
 import { extractErrorMessage } from '../lib/functionErrors'
 import { Dialog } from '../components/Dialog'
-import { ActionMenu } from '../components/ActionMenu'
-
-type IconProps = {
-  className?: string
-}
-
-function PlusIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function SearchIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.75" />
-      <path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function UploadStatIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M12 15.5V4M8 8l4-4 4 4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M4.5 15v2.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V15" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function DownloadStatIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M12 4v11.5M8 12l4 4 4-4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M4.5 17.5V19a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function DownloadIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M12 4v11.5M8 12l4 4 4-4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M4.5 17.5V19a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function TrashIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path
-        d="M5 7h14M9.5 7V5.5a1.5 1.5 0 0 1 1.5-1.5h2a1.5 1.5 0 0 1 1.5 1.5V7m-8 0 .8 12a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9L18 7"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function ChevronsLeftIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function ChevronLeftIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="m15 17-5-5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function ChevronRightIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="m9 17 5-5-5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function ChevronsRightIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="m6 17 5-5-5-5M13 17l5-5-5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
+import { CrudListPage } from '../components/crud'
+import type { CrudEntityLabel, CrudFilterDef, CrudRowAction } from '../components/crud'
+import type { TableColumn } from '../components/types/crud'
+import { useCrudSearch } from '../hooks/useCrudSearch'
+import { usePageMetadata } from '../contexts/PageMetadataContext'
 
 type ClientOption = {
   id: string
@@ -152,7 +66,22 @@ const AUDIENCE_TYPE_LABELS: Record<AudienceType, string> = {
   group: 'Grupo selecionado',
 }
 
-const PAGE_SIZE_OPTIONS = [10, 25, 50]
+type Tab = 'sent' | 'received'
+
+type ReceivedRow = {
+  id: string
+  filePath: string
+  fileName: string
+  uploadedAt: string
+  clientName: string
+  clientEmail: string | null
+}
+
+const SENT_ENTITY: CrudEntityLabel = { singular: 'documento enviado', plural: 'documentos enviados' }
+const RECEIVED_ENTITY: CrudEntityLabel = { singular: 'arquivo recebido', plural: 'arquivos recebidos' }
+
+const TEXTAREA_CLASS_NAME =
+  'flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted-foreground hover:border-primary focus-visible:border-primary focus-visible:outline-none'
 
 function mapSentDocumentRow(row: SentDocumentRow): SentDocument {
   return {
@@ -210,11 +139,8 @@ export function DocumentsPage() {
   const [clients, setClients] = useState<ClientOption[] | null>(null)
   const [clientsError, setClientsError] = useState<string | null>(null)
 
-  const [tab, setTab] = useState<'sent' | 'received'>('sent')
-  const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
-
+  const [tab, setTab] = useState<Tab>('sent')
+  const search = useCrudSearch()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingDocument, setEditingDocument] = useState<SentDocument | null>(null)
@@ -280,48 +206,42 @@ export function DocumentsPage() {
   const totalReceived = receivedUploads?.length ?? 0
 
   const filteredSent = useMemo(() => {
-    const query = search.trim().toLowerCase()
+    const query = search.term.trim().toLowerCase()
     return (sentDocuments ?? []).filter(
       (doc) => !query || doc.title.toLowerCase().includes(query) || doc.fileName.toLowerCase().includes(query),
     )
-  }, [sentDocuments, search])
+  }, [sentDocuments, search.term])
 
   const filteredReceived = useMemo(() => {
-    const query = search.trim().toLowerCase()
-    if (!query) return receivedUploads ?? []
-    return (receivedUploads ?? []).filter((upload) => {
+    const query = search.term.trim().toLowerCase()
+    const rows: ReceivedRow[] = (receivedUploads ?? []).map((upload) => {
       const client = clients?.find((item) => item.id === upload.clientId)
-      const name = client ? (client.name ?? displayNameFromEmail(client.email)) : ''
-      return (
-        upload.fileName.toLowerCase().includes(query) ||
-        name.toLowerCase().includes(query) ||
-        (client?.email ?? '').toLowerCase().includes(query)
-      )
+      return {
+        id: upload.id,
+        filePath: upload.filePath,
+        fileName: upload.fileName,
+        uploadedAt: upload.uploadedAt,
+        clientName: client ? (client.name ?? displayNameFromEmail(client.email)) : 'Cliente removido',
+        clientEmail: client?.email ?? null,
+      }
     })
-  }, [receivedUploads, search, clients])
+    if (!query) return rows
+    return rows.filter(
+      (row) =>
+        row.fileName.toLowerCase().includes(query) ||
+        row.clientName.toLowerCase().includes(query) ||
+        (row.clientEmail ?? '').toLowerCase().includes(query),
+    )
+  }, [receivedUploads, search.term, clients])
 
-  const activeLength = tab === 'sent' ? filteredSent.length : filteredReceived.length
-  const totalPages = Math.max(1, Math.ceil(activeLength / pageSize))
-  const currentPage = Math.min(page, totalPages)
-  const pageStart = activeLength === 0 ? 0 : (currentPage - 1) * pageSize + 1
-  const pageEnd = Math.min(currentPage * pageSize, activeLength)
-  const pageSent = filteredSent.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-  const pageReceived = filteredReceived.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  usePageMetadata({
+    title: 'Documentos',
+    subtitle: `${totalSent} enviados · ${totalReceived} recebidos`,
+  })
 
-  function handleTabChange(nextTab: 'sent' | 'received') {
+  function handleTabChange(nextTab: Tab) {
     setTab(nextTab)
-    setSearch('')
-    setPage(1)
-  }
-
-  function handleSearchChange(value: string) {
-    setSearch(value)
-    setPage(1)
-  }
-
-  function handlePageSizeChange(value: number) {
-    setPageSize(value)
-    setPage(1)
+    search.onChange('')
   }
 
   function handleAudienceTypeChange(next: AudienceType) {
@@ -479,286 +399,154 @@ export function DocumentsPage() {
     window.open(data.signedUrl, '_blank')
   }
 
-  return (
-    <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-100">Documentos</h2>
-          <p className="mt-1 text-sm text-gray-400">Envio e recebimento de arquivos com clientes</p>
-          <div className="mt-3 flex flex-wrap items-center gap-5 text-sm text-gray-400">
-            <span className="flex items-center gap-1.5">
-              <UploadStatIcon className="h-4 w-4 text-gray-500" />
-              {totalSent} enviados
-            </span>
-            <span className="flex items-center gap-1.5">
-              <DownloadStatIcon className="h-4 w-4 text-gray-500" />
-              {totalReceived} recebidos
-            </span>
-          </div>
+  const tabFilter: CrudFilterDef = {
+    key: 'tab',
+    label: 'Tipo',
+    options: [
+      { value: 'sent', label: `Enviados (${totalSent})` },
+      { value: 'received', label: `Recebidos (${totalReceived})` },
+    ],
+    value: tab,
+    onChange: (value) => value && handleTabChange(value as Tab),
+    defaultVisible: true,
+    required: true,
+  }
+
+  const sentColumns: TableColumn<SentDocument>[] = [
+    {
+      key: 'title',
+      header: 'Documento',
+      render: (document) => (
+        <div className="min-w-0">
+          <p className="truncate font-medium text-foreground">{document.title}</p>
+          <p className="truncate text-xs text-muted-foreground">{document.fileName}</p>
         </div>
+      ),
+    },
+    {
+      key: 'audienceType',
+      header: 'Destinatários',
+      render: (document) => <span className="text-muted-foreground">{audienceLabel(document)}</span>,
+    },
+    {
+      key: 'createdAt',
+      header: 'Enviado em',
+      render: (document) => <span className="text-muted-foreground">{formatDateTime(document.createdAt)}</span>,
+    },
+  ]
 
-        {tab === 'sent' && (
-          <button
-            type="button"
-            onClick={openCreateModal}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Enviar documento
-          </button>
-        )}
-      </div>
-
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 rounded-lg bg-gray-800 p-1">
-          <button
-            type="button"
-            onClick={() => handleTabChange('sent')}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'sent' ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
-            }`}
-          >
-            Enviados {totalSent}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTabChange('received')}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'received' ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
-            }`}
-          >
-            Recebidos {totalReceived}
-          </button>
-        </div>
-
-        <div className="relative w-full sm:w-auto">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-          <input
-            type="text"
-            value={search}
-            onChange={(event) => handleSearchChange(event.target.value)}
-            placeholder={tab === 'sent' ? 'Buscar documento...' : 'Buscar arquivo ou cliente...'}
-            className="w-full rounded-lg border border-gray-800 bg-gray-800 py-2 pl-9 pr-3 text-sm focus:border-gray-600 focus:outline-none sm:w-64"
-          />
-        </div>
-      </div>
-
-      {downloadError && <p className="mt-3 text-sm text-red-400">{downloadError}</p>}
-
-      <div className="mt-4 rounded-lg border border-gray-800 bg-gray-900">
-        {tab === 'sent' && sentError && (
-          <div className="flex items-center justify-between p-4 text-sm text-red-400">
-            {sentError}
-            <button type="button" onClick={loadSentDocuments} className="font-medium underline">
-              Tentar novamente
-            </button>
-          </div>
-        )}
-
-        {tab === 'sent' && !sentError && sentDocuments === null && <p className="p-6 text-sm text-gray-500">Carregando...</p>}
-
-        {tab === 'sent' && !sentError && sentDocuments !== null && (
-          <div className="overflow-x-auto overflow-y-visible">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-gray-800 text-xs uppercase tracking-wide text-gray-500">
-                <th className="px-4 py-3 font-medium">Documento</th>
-                <th className="px-4 py-3 font-medium">Destinatários</th>
-                <th className="px-4 py-3 font-medium">Enviado em</th>
-                <th className="px-4 py-3 font-medium">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pageSent.map((document) => (
-                <tr key={document.id} className="border-b border-gray-800 last:border-0">
-                  <td className="px-4 py-3">
-                    <div className="min-w-0">
-                      <p className="truncate font-medium text-gray-100">{document.title}</p>
-                      <p className="truncate text-xs text-gray-400">{document.fileName}</p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-gray-400">{audienceLabel(document)}</td>
-                  <td className="px-4 py-3 text-gray-400">{formatDateTime(document.createdAt)}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => handleDownload(document.filePath)}
-                        disabled={downloadingPath === document.filePath}
-                        className="rounded-md p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-400 disabled:opacity-50"
-                        title="Baixar"
-                      >
-                        <DownloadIcon className="h-4 w-4" />
-                      </button>
-                      <ActionMenu
-                        items={[
-                          { label: 'Editar', onClick: () => openEditModal(document) },
-                          { label: 'Excluir', onClick: () => handleDeleteSent(document), danger: true },
-                        ]}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {pageSent.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-gray-500">
-                    Nenhum documento enviado.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          </div>
-        )}
-
-        {tab === 'received' && receivedError && (
-          <div className="flex items-center justify-between p-4 text-sm text-red-400">
-            {receivedError}
-            <button type="button" onClick={loadReceivedUploads} className="font-medium underline">
-              Tentar novamente
-            </button>
-          </div>
-        )}
-
-        {tab === 'received' && !receivedError && (receivedUploads === null || clients === null) && !clientsError && (
-          <p className="p-6 text-sm text-gray-500">Carregando...</p>
-        )}
-
-        {tab === 'received' && clientsError && (
-          <div className="flex items-center justify-between p-4 text-sm text-red-400">
-            {clientsError}
-            <button type="button" onClick={loadClients} className="font-medium underline">
-              Tentar novamente
-            </button>
-          </div>
-        )}
-
-        {tab === 'received' && !receivedError && !clientsError && receivedUploads !== null && clients !== null && (
-          <div className="overflow-x-auto overflow-y-visible">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-gray-800 text-xs uppercase tracking-wide text-gray-500">
-                <th className="px-4 py-3 font-medium">Cliente</th>
-                <th className="px-4 py-3 font-medium">Arquivo</th>
-                <th className="px-4 py-3 font-medium">Recebido em</th>
-                <th className="px-4 py-3 font-medium">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pageReceived.map((upload) => {
-                const client = clients.find((item) => item.id === upload.clientId)
-                const name = client ? (client.name ?? displayNameFromEmail(client.email)) : 'Cliente removido'
-                return (
-                  <tr key={upload.id} className="border-b border-gray-800 last:border-0">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-900 text-xs font-semibold text-primary-400">
-                          {name.charAt(0).toUpperCase()}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="truncate font-medium text-gray-100">{name}</p>
-                          {client && <p className="truncate text-xs text-gray-400">{client.email}</p>}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-gray-400">{upload.fileName}</td>
-                    <td className="px-4 py-3 text-gray-400">{formatDateTime(upload.uploadedAt)}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => handleDownload(upload.filePath)}
-                          disabled={downloadingPath === upload.filePath}
-                          className="rounded-md p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-400 disabled:opacity-50"
-                          title="Baixar"
-                        >
-                          <DownloadIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteReceived(upload)}
-                          className="rounded-md p-1.5 text-gray-500 hover:bg-gray-800 hover:text-red-400"
-                          title="Excluir"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-              {pageReceived.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-gray-500">
-                    Nenhum arquivo recebido.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          </div>
-        )}
-
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-800 px-4 py-3 text-sm text-gray-400">
-          <div className="flex items-center gap-2">
-            <span>Registros por página</span>
-            <select
-              value={pageSize}
-              onChange={(event) => handlePageSizeChange(Number(event.target.value))}
-              className="rounded-md border border-gray-800 bg-gray-900 px-2 py-1 text-sm focus:outline-none"
-            >
-              {PAGE_SIZE_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <span>
-            {pageStart}-{pageEnd} de {activeLength} itens
+  const receivedColumns: TableColumn<ReceivedRow>[] = [
+    {
+      key: 'clientName',
+      header: 'Cliente',
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+            {row.clientName.charAt(0).toUpperCase()}
           </span>
-
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setPage(1)}
-              disabled={currentPage === 1}
-              className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
-            >
-              <ChevronsLeftIcon className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setPage((value) => Math.max(1, value - 1))}
-              disabled={currentPage === 1}
-              className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
-            >
-              <ChevronLeftIcon className="h-4 w-4" />
-            </button>
-            <span className="px-2">
-              {currentPage} de {totalPages}
-            </span>
-            <button
-              type="button"
-              onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
-              disabled={currentPage === totalPages}
-              className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
-            >
-              <ChevronRightIcon className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setPage(totalPages)}
-              disabled={currentPage === totalPages}
-              className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
-            >
-              <ChevronsRightIcon className="h-4 w-4" />
-            </button>
+          <div className="min-w-0">
+            <p className="truncate font-medium text-foreground">{row.clientName}</p>
+            {row.clientEmail && <p className="truncate text-xs text-muted-foreground">{row.clientEmail}</p>}
           </div>
         </div>
+      ),
+    },
+    {
+      key: 'fileName',
+      header: 'Arquivo',
+      render: (row) => <span className="text-muted-foreground">{row.fileName}</span>,
+    },
+    {
+      key: 'uploadedAt',
+      header: 'Recebido em',
+      render: (row) => <span className="text-muted-foreground">{formatDateTime(row.uploadedAt)}</span>,
+    },
+  ]
+
+  const sentRowActions = (document: SentDocument): CrudRowAction[] => [
+    {
+      label: 'Baixar',
+      icon: Download,
+      onSelect: () => handleDownload(document.filePath),
+      disabled: downloadingPath === document.filePath,
+    },
+    { label: 'Editar', icon: Pencil, onSelect: () => openEditModal(document) },
+    { label: 'Excluir', icon: Trash2, tone: 'destructive', onSelect: () => handleDeleteSent(document) },
+  ]
+
+  const receivedRowActions = (row: ReceivedRow): CrudRowAction[] => [
+    {
+      label: 'Baixar',
+      icon: Download,
+      onSelect: () => handleDownload(row.filePath),
+      disabled: downloadingPath === row.filePath,
+    },
+    {
+      label: 'Excluir',
+      icon: Trash2,
+      tone: 'destructive',
+      onSelect: () => {
+        const upload = receivedUploads?.find((item) => item.id === row.id)
+        if (upload) handleDeleteReceived(upload)
+      },
+    },
+  ]
+
+  const receivedLoadError = receivedError ?? clientsError
+
+  function belowBarOf(error: string | null) {
+    if (!error && !downloadError) return undefined
+    return (
+      <div className="space-y-1 px-4 pb-2 text-sm text-destructive">
+        {error && <p>{error}</p>}
+        {downloadError && <p>{downloadError}</p>}
       </div>
+    )
+  }
+
+  function retryReceived() {
+    if (receivedError) loadReceivedUploads()
+    if (clientsError) loadClients()
+  }
+
+  return (
+    <div className="h-full">
+      {tab === 'sent' ? (
+        <CrudListPage<SentDocument>
+          entity={SENT_ENTITY}
+          rows={filteredSent}
+          columns={sentColumns}
+          isLoading={sentDocuments === null && !sentError}
+          isError={sentError !== null}
+          onRetry={loadSentDocuments}
+          search={search}
+          searchPlaceholder="Buscar documento..."
+          filterDefs={[tabFilter]}
+          resetKey={tab}
+          pageSize={10}
+          onNew={openCreateModal}
+          newLabel="Enviar documento"
+          newIcon={Plus}
+          rowActions={sentRowActions}
+          belowBar={belowBarOf(sentError)}
+        />
+      ) : (
+        <CrudListPage<ReceivedRow>
+          entity={RECEIVED_ENTITY}
+          rows={filteredReceived}
+          columns={receivedColumns}
+          isLoading={!receivedLoadError && (receivedUploads === null || clients === null)}
+          isError={receivedLoadError !== null}
+          onRetry={retryReceived}
+          search={search}
+          searchPlaceholder="Buscar arquivo ou cliente..."
+          filterDefs={[tabFilter]}
+          resetKey={tab}
+          pageSize={10}
+          rowActions={receivedRowActions}
+          belowBar={belowBarOf(receivedLoadError)}
+        />
+      )}
 
       <Dialog
         open={modalOpen}
@@ -768,104 +556,88 @@ export function DocumentsPage() {
       >
         <form onSubmit={handleSave} className="space-y-4">
           <div className="space-y-1.5">
-            <label htmlFor="document-title" className="text-sm font-medium text-gray-300">
-              Título
-            </label>
-            <input
-              id="document-title"
-              type="text"
-              required
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-            />
+            <Label htmlFor="document-title">Título</Label>
+            <Input id="document-title" type="text" required value={title} onChange={(event) => setTitle(event.target.value)} />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="document-description" className="text-sm font-medium text-gray-300">
-              Descrição
-            </label>
+            <Label htmlFor="document-description">Descrição</Label>
             <textarea
               id="document-description"
               rows={2}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              className={TEXTAREA_CLASS_NAME}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="document-file" className="text-sm font-medium text-gray-300">
+            <Label htmlFor="document-file">
               Arquivo{editingDocument && ' (opcional — mantém o atual se não escolher outro)'}
-            </label>
+            </Label>
             {editingDocument && !selectedFile && (
-              <p className="text-xs text-gray-400">Atual: {editingDocument.fileName}</p>
+              <p className="text-xs text-muted-foreground">Atual: {editingDocument.fileName}</p>
             )}
-            <input
+            <Input
               id="document-file"
               type="file"
               required={!editingDocument}
               onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm text-gray-400 transition-colors file:mr-3 file:rounded-md file:border-0 file:bg-gray-800 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-gray-300 hover:file:bg-gray-700 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              className="h-auto text-muted-foreground"
             />
           </div>
 
-          <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-800/60 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Destinatários</p>
-            <div className="flex items-center gap-1 rounded-lg bg-gray-800 p-1">
+          <div className="space-y-3 rounded-xl border bg-muted/60 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Destinatários</p>
+            <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
               {(Object.keys(AUDIENCE_TYPE_LABELS) as AudienceType[]).map((option) => (
-                <button
+                <Button
                   key={option}
                   type="button"
+                  size="sm"
+                  variant={audienceType === option ? 'tertiary' : 'ghost'}
                   onClick={() => handleAudienceTypeChange(option)}
-                  className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium ${
-                    audienceType === option ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
-                  }`}
+                  className="flex-1"
                 >
                   {AUDIENCE_TYPE_LABELS[option]}
-                </button>
+                </Button>
               ))}
             </div>
 
             {audienceType !== 'all' && (
               <div className="space-y-2">
-                <input
+                <Input
                   type="text"
                   value={audienceQuery}
                   onChange={(event) => setAudienceQuery(event.target.value)}
                   placeholder="Buscar pessoa..."
-                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                 />
 
                 {clientsError && (
-                  <div className="flex items-center justify-between text-sm text-red-400">
+                  <div className="flex items-center justify-between text-sm text-destructive">
                     {clientsError}
-                    <button type="button" onClick={loadClients} className="font-medium underline">
+                    <Button type="button" variant="link" size="sm" onClick={loadClients}>
                       Tentar novamente
-                    </button>
+                    </Button>
                   </div>
                 )}
 
                 <div className="max-h-32 space-y-0.5 overflow-y-auto">
-                  {!clientsError && clients === null && <p className="px-2 py-1 text-sm text-gray-500">Carregando...</p>}
+                  {!clientsError && clients === null && <p className="px-2 py-1 text-sm text-muted-foreground">Carregando...</p>}
                   {!clientsError && clients !== null && filteredAudienceClients.length === 0 && (
-                    <p className="px-2 py-1 text-sm text-gray-500">Nenhuma pessoa encontrada.</p>
+                    <p className="px-2 py-1 text-sm text-muted-foreground">Nenhuma pessoa encontrada.</p>
                   )}
                   {filteredAudienceClients.map((client) => (
                     <label
                       key={client.id}
-                      className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-800"
+                      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-accent"
                     >
                       <input
                         type={audienceType === 'individual' ? 'radio' : 'checkbox'}
                         name={audienceType === 'individual' ? 'document-individual' : undefined}
                         checked={audienceClientIds.includes(client.id)}
                         onChange={() => handleToggleAudienceClient(client.id)}
-                        className={
-                          audienceType === 'individual'
-                            ? 'h-4 w-4 border-gray-700 accent-primary-600'
-                            : 'h-4 w-4 rounded border-gray-700 accent-primary-600'
-                        }
+                        className="h-4 w-4 accent-primary"
                       />
                       {client.name ?? displayNameFromEmail(client.email)}
                     </label>
@@ -875,23 +647,15 @@ export function DocumentsPage() {
             )}
           </div>
 
-          {formError && <p className="text-sm text-red-400">{formError}</p>}
+          {formError && <p className="text-sm text-destructive">{formError}</p>}
 
-          <div className="flex items-center justify-end gap-2 border-t border-gray-800 pt-4">
-            <button
-              type="button"
-              onClick={() => setModalOpen(false)}
-              className="rounded-lg border border-gray-700 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800"
-            >
+          <div className="flex items-center justify-end gap-2 border-t pt-4">
+            <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
               Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
-            >
+            </Button>
+            <Button type="submit" disabled={submitting}>
               {submitting ? 'Enviando...' : editingDocument ? 'Salvar' : 'Enviar'}
-            </button>
+            </Button>
           </div>
         </form>
       </Dialog>

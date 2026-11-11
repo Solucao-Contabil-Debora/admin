@@ -4,76 +4,17 @@ import { supabase } from '../lib/supabaseClient'
 import { displayNameFromEmail } from '../lib/displayName'
 import { extractErrorMessage } from '../lib/functionErrors'
 import { Dialog } from '../components/Dialog'
-
-type IconProps = {
-  className?: string
-}
-
-function PlusIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function SearchIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.75" />
-      <path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function MoreIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <circle cx="12" cy="5" r="1.6" />
-      <circle cx="12" cy="12" r="1.6" />
-      <circle cx="12" cy="19" r="1.6" />
-    </svg>
-  )
-}
-
-function ChevronLeftIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="m15 17-5-5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function ChevronRightIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="m9 17 5-5-5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function NoteIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <rect x="5" y="3.5" width="14" height="17" rx="2" stroke="currentColor" strokeWidth="1.75" />
-      <path d="M8.5 8.5h7M8.5 12h7M8.5 15.5h4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function BellIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path
-        d="M12 3.5c-2.9 0-5 2.3-5 5.2v3.1c0 .6-.2 1.2-.6 1.7l-.9 1.1c-.6.8 0 1.9 1 1.9h11c1 0 1.6-1.1 1-1.9l-.9-1.1c-.4-.5-.6-1.1-.6-1.7V8.7c0-2.9-2.1-5.2-5-5.2Z"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-      />
-      <path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
+import { ActionMenu } from '../components/ActionMenu'
+import { Bell, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { Badge } from '../components/ui/badge'
+import { Button } from '../components/ui/button'
+import { Checkbox } from '../components/ui/checkbox'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
+import { CrudActionBarV2 } from '../components/crud'
+import type { CrudFilterDef } from '../components/crud'
+import { usePageMetadata } from '../contexts/PageMetadataContext'
 
 type ClientOption = {
   id: string
@@ -114,15 +55,15 @@ const NOTE_TYPE_LABELS: Record<NoteType, string> = {
 }
 
 const NOTE_TYPE_DOT_COLORS: Record<NoteType, string> = {
-  alerta: 'bg-red-500',
-  informativo: 'bg-primary-500',
-  urgente: 'bg-amber-500',
+  alerta: 'bg-destructive',
+  informativo: 'bg-primary',
+  urgente: 'bg-warning',
 }
 
-const NOTE_TYPE_TEXT_COLORS: Record<NoteType, string> = {
-  alerta: 'text-red-400',
-  informativo: 'text-primary-400',
-  urgente: 'text-amber-400',
+const NOTE_TYPE_BADGE_VARIANTS: Record<NoteType, 'danger' | 'info' | 'warning'> = {
+  alerta: 'danger',
+  informativo: 'info',
+  urgente: 'warning',
 }
 
 const REMINDER_OPTIONS = [
@@ -205,8 +146,6 @@ function filterClientsByQuery(options: ClientOption[], query: string) {
 export function CalendarPage() {
   const [clients, setClients] = useState<ClientOption[] | null>(null)
   const [clientsError, setClientsError] = useState<string | null>(null)
-  const [clientQuery, setClientQuery] = useState('')
-  const [clientPickerOpen, setClientPickerOpen] = useState(false)
   const [selectedClient, setSelectedClient] = useState<ClientOption | null>(null)
 
   const [viewMonth, setViewMonth] = useState(() => startOfMonth(new Date()))
@@ -214,7 +153,6 @@ export function CalendarPage() {
   const [notesError, setNotesError] = useState<string | null>(null)
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
   const [noteModalOpen, setNoteModalOpen] = useState(false)
   const [editingNote, setEditingNote] = useState<CalendarNote | null>(null)
@@ -244,8 +182,6 @@ export function CalendarPage() {
   useEffect(() => {
     loadClients()
   }, [])
-
-  const filteredClients = useMemo(() => filterClientsByQuery(clients ?? [], clientQuery), [clients, clientQuery])
 
   const filteredAudienceClients = useMemo(
     () => filterClientsByQuery(clients ?? [], audienceQuery),
@@ -300,10 +236,13 @@ export function CalendarPage() {
   const totalNotesThisMonth = visibleNotes.length
   const notesWithNotification = visibleNotes.filter((note) => note.notifyEnabled).length
 
+  usePageMetadata({
+    title: 'Calendário',
+    subtitle: `${totalNotesThisMonth} notas neste mês · ${notesWithNotification} com notificação`,
+  })
+
   function handleSelectClient(client: ClientOption | null) {
     setSelectedClient(client)
-    setClientPickerOpen(false)
-    setClientQuery('')
     setSelectedDate(null)
   }
 
@@ -356,6 +295,20 @@ export function CalendarPage() {
     setFormError(null)
     setNoteModalOpen(true)
   }
+
+  const clientFilterDefs: CrudFilterDef[] = [
+    {
+      key: 'client',
+      label: 'Cliente',
+      options: (clients ?? []).map((client) => ({
+        value: client.id,
+        label: client.name ?? displayNameFromEmail(client.email),
+      })),
+      value: selectedClient?.id ?? null,
+      onChange: (clientId) => handleSelectClient(clients?.find((client) => client.id === clientId) ?? null),
+      defaultVisible: true,
+    },
+  ]
 
   async function handleSaveNote(event: FormEvent) {
     event.preventDefault()
@@ -446,289 +399,179 @@ export function CalendarPage() {
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-100">Calendário</h2>
-          <p className="mt-1 text-sm text-gray-400">{totalNotesThisMonth} notas neste mês</p>
-          <div className="mt-3 flex flex-wrap items-center gap-5 text-sm text-gray-400">
-            <span className="flex items-center gap-1.5">
-              <NoteIcon className="h-4 w-4 text-gray-500" />
-              {totalNotesThisMonth} notas
-            </span>
-            <span className="flex items-center gap-1.5">
-              <BellIcon className="h-4 w-4 text-gray-500" />
-              {notesWithNotification} com notificação
-            </span>
-          </div>
-        </div>
+    <div className="flex h-full min-h-0 flex-col">
+      <CrudActionBarV2
+        filters={clientFilterDefs}
+        onNew={() => openCreateModal(selectedDate ?? new Date())}
+        newButtonLabel="Nova nota"
+        newButtonIcon={Plus}
+      />
 
-        <button
-          type="button"
-          onClick={() => openCreateModal(selectedDate ?? new Date())}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          <PlusIcon className="h-4 w-4" />
-          Nova nota
-        </button>
-      </div>
-
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 rounded-lg bg-gray-800 p-1">
-          <button
-            type="button"
-            onClick={() => setViewMonth((month) => addMonths(month, -1))}
-            className="rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-gray-300 hover:shadow-sm"
-          >
-            <ChevronLeftIcon className="h-4 w-4" />
-          </button>
-          <span className="w-32 text-center text-sm font-medium text-gray-100">
-            {MONTH_LABELS[viewMonth.getMonth()]} {viewMonth.getFullYear()}
-          </span>
-          <button
-            type="button"
-            onClick={() => setViewMonth((month) => addMonths(month, 1))}
-            className="rounded-md p-1.5 text-gray-400 hover:bg-gray-700 hover:text-gray-300 hover:shadow-sm"
-          >
-            <ChevronRightIcon className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="flex w-full items-center gap-2 sm:w-auto">
-          <button
-            type="button"
-            onClick={() => setViewMonth(startOfMonth(new Date()))}
-            className="shrink-0 rounded-md border border-gray-800 px-3 py-1.5 text-sm text-gray-400 hover:bg-gray-800"
-          >
-            Hoje
-          </button>
-
-          <div className="relative w-full sm:w-56">
-            <button
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 md:p-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
+            <Button
               type="button"
-              onClick={() => setClientPickerOpen((value) => !value)}
-              className="relative flex w-full items-center justify-start truncate rounded-lg border border-gray-800 bg-gray-800 py-2 pl-9 pr-3 text-left text-sm text-gray-300 hover:border-gray-700"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Mês anterior"
+              onClick={() => setViewMonth((month) => addMonths(month, -1))}
             >
-              <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-              <span className="truncate">
-                {selectedClient ? (selectedClient.name ?? displayNameFromEmail(selectedClient.email)) : 'Todos os clientes'}
-              </span>
-            </button>
-
-            {clientPickerOpen && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setClientPickerOpen(false)} />
-                <div className="absolute right-0 z-20 mt-1 w-64 rounded-lg border border-gray-800 bg-gray-900 shadow-lg">
-                  <div className="p-2">
-                    <input
-                      type="text"
-                      autoFocus
-                      value={clientQuery}
-                      onChange={(event) => setClientQuery(event.target.value)}
-                      placeholder="Buscar cliente..."
-                      className="w-full rounded-md border border-gray-800 bg-gray-800 px-3 py-2 text-sm focus:border-gray-600 focus:outline-none"
-                    />
-                  </div>
-
-                  {clientsError && (
-                    <div className="flex items-center justify-between px-3 pb-2 text-sm text-red-400">
-                      {clientsError}
-                      <button type="button" onClick={loadClients} className="font-medium underline">
-                        Tentar novamente
-                      </button>
-                    </div>
-                  )}
-
-                  {!clientsError && clients === null && (
-                    <p className="px-3 pb-2 text-sm text-gray-500">Carregando...</p>
-                  )}
-
-                  {!clientsError && clients !== null && (
-                    <div className="max-h-56 overflow-y-auto border-t border-gray-800">
-                      <button
-                        type="button"
-                        onClick={() => handleSelectClient(null)}
-                        className="w-full px-3 py-2 text-left text-sm font-medium text-gray-100 hover:bg-gray-800"
-                      >
-                        Todos os clientes
-                      </button>
-                      {filteredClients.length === 0 && (
-                        <p className="px-3 py-2 text-sm text-gray-500">Nenhum cliente encontrado.</p>
-                      )}
-                      {filteredClients.map((client) => (
-                        <button
-                          key={client.id}
-                          type="button"
-                          onClick={() => handleSelectClient(client)}
-                          className="flex w-full flex-col items-start border-t border-gray-800 px-3 py-2 text-left hover:bg-gray-800"
-                        >
-                          <span className="text-sm font-medium text-gray-100">
-                            {client.name ?? displayNameFromEmail(client.email)}
-                          </span>
-                          <span className="text-xs text-gray-400">{client.email}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 rounded-lg border border-gray-800 bg-gray-900 p-4">
-        <div className="flex items-center gap-4 text-xs text-gray-400">
-          {(Object.keys(NOTE_TYPE_LABELS) as NoteType[]).map((type) => (
-            <span key={type} className="flex items-center gap-1.5">
-              <span className={`h-2 w-2 rounded-full ${NOTE_TYPE_DOT_COLORS[type]}`} />
-              {NOTE_TYPE_LABELS[type]}
+              <ChevronLeft />
+            </Button>
+            <span className="w-36 text-center text-sm font-medium text-foreground">
+              {MONTH_LABELS[viewMonth.getMonth()]} {viewMonth.getFullYear()}
             </span>
-          ))}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Próximo mês"
+              onClick={() => setViewMonth((month) => addMonths(month, 1))}
+            >
+              <ChevronRight />
+            </Button>
+          </div>
+
+          <Button type="button" variant="outline" size="sm" onClick={() => setViewMonth(startOfMonth(new Date()))}>
+            Hoje
+          </Button>
         </div>
 
-        {notesError && (
-          <div className="mt-4 flex items-center justify-between text-sm text-red-400">
-            {notesError}
-            <button type="button" onClick={loadNotes} className="font-medium underline">
+        {clientsError && (
+          <div className="mt-4 flex items-center justify-between text-sm text-destructive">
+            {clientsError}
+            <Button type="button" variant="link" size="sm" onClick={loadClients}>
               Tentar novamente
-            </button>
+            </Button>
           </div>
         )}
 
-        <div className="mt-3 flex flex-col gap-4 lg:flex-row">
-          <div className="grid flex-1 grid-cols-7 gap-px overflow-hidden rounded-lg border border-gray-800 bg-gray-800 text-xs">
-            {WEEKDAY_LABELS.map((label) => (
-              <div key={label} className="bg-gray-800 px-2 py-2 text-center font-medium uppercase tracking-wide text-gray-500">
-                {label}
-              </div>
+        <div className="mt-4 rounded-xl border bg-card p-4">
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            {(Object.keys(NOTE_TYPE_LABELS) as NoteType[]).map((type) => (
+              <span key={type} className="flex items-center gap-1.5">
+                <span className={`h-2 w-2 rounded-full ${NOTE_TYPE_DOT_COLORS[type]}`} />
+                {NOTE_TYPE_LABELS[type]}
+              </span>
             ))}
-            {monthGridDays.map((day) => {
-              const key = toDateKey(day)
-              const dayNotes = notesByDate.get(key) ?? []
-              const isCurrentMonth = day.getMonth() === viewMonth.getMonth()
-              const isToday = key === todayKey
-              const isSelected = key === selectedDateKey
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => handleSelectDay(day)}
-                  className={`flex min-h-[76px] flex-col items-start gap-1 bg-gray-900 p-2 text-left hover:bg-gray-800 ${
-                    isCurrentMonth ? '' : 'text-gray-700'
-                  } ${isSelected ? 'ring-2 ring-inset ring-primary-500' : ''}`}
-                >
-                  <span
-                    className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
-                      isToday ? 'bg-primary-600 text-white' : ''
-                    }`}
-                  >
-                    {day.getDate()}
-                  </span>
-                  <div className="flex flex-wrap gap-1">
-                    {dayNotes.slice(0, 3).map((note) => (
-                      <span key={note.id} className={`h-1.5 w-1.5 rounded-full ${NOTE_TYPE_DOT_COLORS[note.type]}`} />
-                    ))}
-                    {dayNotes.length > 3 && <span className="text-[10px] text-gray-500">+{dayNotes.length - 3}</span>}
-                  </div>
-                </button>
-              )
-            })}
           </div>
 
-          <div className="w-full shrink-0 rounded-lg border border-gray-800 p-4 lg:w-72">
-            {selectedDate ? (
-              <>
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-100">{formatDayLabel(selectedDate)}</h3>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedDate(null)}
-                    className="text-xs font-medium text-gray-500 hover:text-gray-400"
-                  >
-                    Fechar
-                  </button>
-                </div>
+          {notesError && (
+            <div className="mt-4 flex items-center justify-between text-sm text-destructive">
+              {notesError}
+              <Button type="button" variant="link" size="sm" onClick={loadNotes}>
+                Tentar novamente
+              </Button>
+            </div>
+          )}
 
-                <button
-                  type="button"
-                  onClick={() => openCreateModal(selectedDate)}
-                  className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white hover:bg-primary-700"
+          <div className="mt-3 flex flex-col gap-4 lg:flex-row">
+            <div className="grid flex-1 grid-cols-7 gap-px overflow-hidden rounded-lg border bg-border text-xs">
+              {WEEKDAY_LABELS.map((label) => (
+                <div
+                  key={label}
+                  className="bg-muted px-2 py-2 text-center font-medium uppercase tracking-wide text-muted-foreground"
                 >
-                  <PlusIcon className="h-4 w-4" />
-                  Nova nota
-                </button>
+                  {label}
+                </div>
+              ))}
+              {monthGridDays.map((day) => {
+                const key = toDateKey(day)
+                const dayNotes = notesByDate.get(key) ?? []
+                const isCurrentMonth = day.getMonth() === viewMonth.getMonth()
+                const isToday = key === todayKey
+                const isSelected = key === selectedDateKey
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => handleSelectDay(day)}
+                    className={`flex min-h-[76px] cursor-pointer flex-col items-start gap-1 bg-card p-2 text-left hover:bg-muted ${
+                      isCurrentMonth ? 'text-foreground' : 'text-muted-foreground/50'
+                    } ${isSelected ? 'ring-2 ring-inset ring-primary' : ''}`}
+                  >
+                    <span
+                      className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
+                        isToday ? 'bg-primary text-primary-foreground' : ''
+                      }`}
+                    >
+                      {day.getDate()}
+                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {dayNotes.slice(0, 3).map((note) => (
+                        <span key={note.id} className={`h-1.5 w-1.5 rounded-full ${NOTE_TYPE_DOT_COLORS[note.type]}`} />
+                      ))}
+                      {dayNotes.length > 3 && (
+                        <span className="text-[10px] text-muted-foreground">+{dayNotes.length - 3}</span>
+                      )}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
 
-                <div className="mt-4 max-h-[26rem] space-y-2 overflow-y-auto">
-                  {selectedDateNotes.length === 0 && (
-                    <p className="text-sm text-gray-500">Nenhuma nota para este dia.</p>
-                  )}
-                  {selectedDateNotes.map((note) => (
-                    <div key={note.id} className="rounded-lg border border-gray-800 p-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className={`h-1.5 w-1.5 rounded-full ${NOTE_TYPE_DOT_COLORS[note.type]}`} />
-                            <span className={`text-xs font-medium ${NOTE_TYPE_TEXT_COLORS[note.type]}`}>
-                              {NOTE_TYPE_LABELS[note.type]}
-                            </span>
-                            <span className="text-xs text-gray-500">{formatTime(new Date(note.eventAt))}</span>
-                            {note.notifyEnabled && <BellIcon className="h-3.5 w-3.5 text-gray-500" />}
+            <div className="w-full shrink-0 rounded-lg border p-4 lg:w-72">
+              {selectedDate ? (
+                <>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground">{formatDayLabel(selectedDate)}</h3>
+                    <Button
+                      type="button"
+                      variant="link"
+                      size="sm"
+                      onClick={() => setSelectedDate(null)}
+                      className="h-auto p-0 text-xs text-muted-foreground"
+                    >
+                      Fechar
+                    </Button>
+                  </div>
+
+                  <Button type="button" onClick={() => openCreateModal(selectedDate)} className="mt-3 w-full">
+                    <Plus />
+                    Nova nota
+                  </Button>
+
+                  <div className="mt-4 max-h-[26rem] space-y-2 overflow-y-auto">
+                    {selectedDateNotes.length === 0 && (
+                      <p className="text-sm text-muted-foreground">Nenhuma nota para este dia.</p>
+                    )}
+                    {selectedDateNotes.map((note) => (
+                      <div key={note.id} className="rounded-lg border p-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <Badge variant={NOTE_TYPE_BADGE_VARIANTS[note.type]}>{NOTE_TYPE_LABELS[note.type]}</Badge>
+                              <span className="text-xs text-muted-foreground">{formatTime(new Date(note.eventAt))}</span>
+                              {note.notifyEnabled && <Bell className="h-3.5 w-3.5 text-muted-foreground" />}
+                            </div>
+                            <p className="mt-1 truncate text-sm font-medium text-foreground">{note.title}</p>
+                            {note.description && (
+                              <p className="mt-0.5 truncate text-xs text-muted-foreground">{note.description}</p>
+                            )}
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              {note.appliesToAll
+                                ? 'Todos os clientes'
+                                : `${note.targetClientIds.length} cliente${note.targetClientIds.length === 1 ? '' : 's'}`}
+                            </p>
                           </div>
-                          <p className="mt-1 truncate text-sm font-medium text-gray-100">{note.title}</p>
-                          {note.description && (
-                            <p className="mt-0.5 truncate text-xs text-gray-400">{note.description}</p>
-                          )}
-                          <p className="mt-0.5 text-xs text-gray-500">
-                            {note.appliesToAll
-                              ? 'Todos os clientes'
-                              : `${note.targetClientIds.length} cliente${note.targetClientIds.length === 1 ? '' : 's'}`}
-                          </p>
-                        </div>
-                        <div className="relative shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => setOpenMenuId(openMenuId === note.id ? null : note.id)}
-                            className="rounded-md p-1.5 text-gray-500 hover:bg-gray-800 hover:text-gray-400"
-                          >
-                            <MoreIcon className="h-4 w-4" />
-                          </button>
-                          {openMenuId === note.id && (
-                            <>
-                              <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
-                              <div className="absolute right-0 z-20 mt-1 w-32 rounded-md border border-gray-800 bg-gray-900 py-1 shadow-lg">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setOpenMenuId(null)
-                                    openEditModal(note)
-                                  }}
-                                  className="w-full px-3 py-2 text-left text-sm text-gray-300 hover:bg-gray-800"
-                                >
-                                  Editar
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setOpenMenuId(null)
-                                    handleDeleteNote(note)
-                                  }}
-                                  className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-gray-800"
-                                >
-                                  Excluir
-                                </button>
-                              </div>
-                            </>
-                          )}
+                          <ActionMenu
+                            items={[
+                              { label: 'Editar', onClick: () => openEditModal(note) },
+                              { label: 'Excluir', onClick: () => handleDeleteNote(note), danger: true },
+                            ]}
+                          />
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p className="text-sm text-gray-500">Selecione um dia no calendário para ver os itens programados.</p>
-            )}
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Selecione um dia no calendário para ver os itens programados.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -741,166 +584,141 @@ export function CalendarPage() {
       >
         <form onSubmit={handleSaveNote} className="space-y-4">
           <div className="space-y-1.5">
-            <label htmlFor="note-title" className="text-sm font-medium text-gray-300">
-              Título
-            </label>
-            <input
+            <Label htmlFor="note-title">Título</Label>
+            <Input
               id="note-title"
               type="text"
               required
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="note-description" className="text-sm font-medium text-gray-300">
-              Descrição
-            </label>
+            <Label htmlFor="note-description">Descrição</Label>
             <textarea
               id="note-description"
               rows={2}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-xs transition-colors placeholder:text-muted-foreground hover:border-primary focus-visible:border-primary focus-visible:outline-none md:text-sm"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label htmlFor="note-date" className="text-sm font-medium text-gray-300">
-                Data
-              </label>
-              <input
+              <Label htmlFor="note-date">Data</Label>
+              <Input
                 id="note-date"
                 type="date"
                 required
                 value={eventDate}
                 onChange={(event) => setEventDate(event.target.value)}
-                className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="note-time" className="text-sm font-medium text-gray-300">
-                Hora
-              </label>
-              <input
+              <Label htmlFor="note-time">Hora</Label>
+              <Input
                 id="note-time"
                 type="time"
                 required
                 value={eventTime}
                 onChange={(event) => setEventTime(event.target.value)}
-                className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="note-type" className="text-sm font-medium text-gray-300">
-              Tipo
-            </label>
-            <select
-              id="note-type"
-              value={noteType}
-              onChange={(event) => setNoteType(event.target.value as NoteType)}
-              className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-            >
-              {(Object.keys(NOTE_TYPE_LABELS) as NoteType[]).map((option) => (
-                <option key={option} value={option}>
-                  {NOTE_TYPE_LABELS[option]}
-                </option>
-              ))}
-            </select>
+            <Label htmlFor="note-type">Tipo</Label>
+            <Select value={noteType} onValueChange={(value) => setNoteType(value as NoteType)}>
+              <SelectTrigger id="note-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(NOTE_TYPE_LABELS) as NoteType[]).map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {NOTE_TYPE_LABELS[option]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-800/60 p-4">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-300">
-              <input
-                type="checkbox"
+          <div className="space-y-3 rounded-xl border bg-muted/60 p-4">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="note-all-clients"
                 checked={allClients}
-                onChange={(event) => setAllClients(event.target.checked)}
-                className="h-4 w-4 rounded border-gray-700 accent-primary-600"
+                onCheckedChange={(checked) => setAllClients(checked === true)}
               />
-              Todos os clientes
-            </label>
+              <Label htmlFor="note-all-clients">Todos os clientes</Label>
+            </div>
 
             {!allClients && (
               <div className="space-y-2">
-                <input
+                <Input
                   type="text"
                   value={audienceQuery}
                   onChange={(event) => setAudienceQuery(event.target.value)}
                   placeholder="Buscar cliente..."
-                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                 />
                 <div className="max-h-32 space-y-0.5 overflow-y-auto">
                   {filteredAudienceClients.length === 0 && (
-                    <p className="px-2 py-1 text-sm text-gray-500">Nenhum cliente encontrado.</p>
+                    <p className="px-2 py-1 text-sm text-muted-foreground">Nenhum cliente encontrado.</p>
                   )}
                   {filteredAudienceClients.map((client) => (
-                    <label
-                      key={client.id}
-                      className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-800"
-                    >
-                      <input
-                        type="checkbox"
+                    <div key={client.id} className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-accent">
+                      <Checkbox
+                        id={`audience-${client.id}`}
                         checked={audienceClientIds.includes(client.id)}
-                        onChange={() => toggleAudienceClient(client.id)}
-                        className="h-4 w-4 rounded border-gray-700 accent-primary-600"
+                        onCheckedChange={() => toggleAudienceClient(client.id)}
                       />
-                      {client.name ?? displayNameFromEmail(client.email)}
-                    </label>
+                      <Label htmlFor={`audience-${client.id}`} className="flex-1 cursor-pointer font-normal">
+                        {client.name ?? displayNameFromEmail(client.email)}
+                      </Label>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
           </div>
 
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-300">
-            <input
-              type="checkbox"
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="note-notify"
               checked={notifyEnabled}
-              onChange={(event) => setNotifyEnabled(event.target.checked)}
-              className="h-4 w-4 rounded border-gray-700 accent-primary-600"
+              onCheckedChange={(checked) => setNotifyEnabled(checked === true)}
             />
-            Notificar
-          </label>
+            <Label htmlFor="note-notify">Notificar</Label>
+          </div>
 
           {notifyEnabled && (
-            <div className="space-y-1.5 rounded-xl border border-gray-800 bg-gray-800/60 p-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Avisar</p>
+            <div className="space-y-1.5 rounded-xl border bg-muted/60 p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Avisar</p>
               {REMINDER_OPTIONS.map((option) => (
-                <label key={option.minutes} className="flex items-center gap-2 text-sm text-gray-300">
-                  <input
-                    type="checkbox"
+                <div key={option.minutes} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`note-reminder-${option.minutes}`}
                     checked={selectedOffsets.includes(option.minutes)}
-                    onChange={() => toggleOffset(option.minutes)}
-                    className="h-4 w-4 rounded border-gray-700 accent-primary-600"
+                    onCheckedChange={() => toggleOffset(option.minutes)}
                   />
-                  {option.label}
-                </label>
+                  <Label htmlFor={`note-reminder-${option.minutes}`} className="font-normal">
+                    {option.label}
+                  </Label>
+                </div>
               ))}
             </div>
           )}
 
-          {formError && <p className="text-sm text-red-400">{formError}</p>}
+          {formError && <p className="text-sm text-destructive">{formError}</p>}
 
-          <div className="flex items-center justify-end gap-2 border-t border-gray-800 pt-4">
-            <button
-              type="button"
-              onClick={() => setNoteModalOpen(false)}
-              className="rounded-lg border border-gray-700 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800"
-            >
+          <div className="flex items-center justify-end gap-2 border-t pt-4">
+            <Button type="button" variant="outline" onClick={() => setNoteModalOpen(false)}>
               Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
-            >
+            </Button>
+            <Button type="submit" disabled={submitting}>
               {submitting ? 'Salvando...' : 'Salvar'}
-            </button>
+            </Button>
           </div>
         </form>
       </Dialog>

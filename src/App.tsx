@@ -30,12 +30,12 @@ const SIDEBAR_CONFIG: SidebarConfig = {
 }
 
 const PAGES: Record<NavKey, { Page: () => React.JSX.Element; padded: boolean }> = {
-  users: { Page: UsersPage, padded: true },
+  users: { Page: UsersPage, padded: false },
   clients: { Page: ClientsPage, padded: false },
-  calendar: { Page: CalendarPage, padded: true },
-  announcements: { Page: AnnouncementsPage, padded: true },
-  requests: { Page: RequestsPage, padded: true },
-  documents: { Page: DocumentsPage, padded: true },
+  calendar: { Page: CalendarPage, padded: false },
+  announcements: { Page: AnnouncementsPage, padded: false },
+  requests: { Page: RequestsPage, padded: false },
+  documents: { Page: DocumentsPage, padded: false },
 }
 
 function App() {
@@ -69,15 +69,15 @@ function App() {
 
   if (!isAdmin) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-gray-950 p-4">
-        <div className="w-full max-w-sm rounded-lg border border-gray-800 bg-gray-900 p-8 text-center shadow-sm">
-          <h1 className="text-xl font-semibold text-gray-100">Acesso negado</h1>
-          <p className="mt-2 text-sm text-gray-400">
+      <div className="flex min-h-svh items-center justify-center bg-background p-4">
+        <div className="w-full max-w-sm rounded-lg border bg-card p-8 text-center shadow-sm">
+          <h1 className="text-xl font-semibold text-foreground">Acesso negado</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             Esta conta não tem permissão de admin.
           </p>
           <button
             onClick={signOut}
-            className="mt-4 text-sm font-medium text-gray-300 underline"
+            className="mt-4 text-sm font-medium text-foreground underline"
           >
             Sair
           </button>

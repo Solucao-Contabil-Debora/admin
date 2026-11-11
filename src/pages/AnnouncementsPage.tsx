@@ -1,92 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import { Plus } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { displayNameFromEmail } from '../lib/displayName'
 import { extractErrorMessage } from '../lib/functionErrors'
 import { Dialog } from '../components/Dialog'
-import { ActionMenu } from '../components/ActionMenu'
-
-type IconProps = {
-  className?: string
-}
-
-function PlusIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function SearchIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.75" />
-      <path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function MegaphoneStatIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path
-        d="M3.5 11v2a1.5 1.5 0 0 0 1.5 1.5h1l.7 4.2a1 1 0 0 0 1 .8h1a1 1 0 0 0 1-1.2L9 14.5"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M6 8.5 15.5 4c1-.5 2 .3 2 1.4v11.2c0 1.1-1 1.9-2 1.4L6 13.5v-5Z"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function CalendarStatIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <rect x="3.5" y="5" width="17" height="15" rx="2.5" stroke="currentColor" strokeWidth="1.75" />
-      <path d="M3.5 9.5h17" stroke="currentColor" strokeWidth="1.75" />
-      <path d="M8 3v3.5M16 3v3.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function ChevronsLeftIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function ChevronLeftIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="m15 17-5-5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function ChevronRightIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="m9 17 5-5-5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function ChevronsRightIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="m6 17 5-5-5-5M13 17l5-5-5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
+import { Badge } from '../components/ui/badge'
+import { Button } from '../components/ui/button'
+import { Checkbox } from '../components/ui/checkbox'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
+import { CrudListPage } from '../components/crud'
+import type { CrudEntityLabel, CrudFilterDef, CrudRowAction } from '../components/crud'
+import type { TableColumn } from '../components/types/crud'
+import { useCrudSearch } from '../hooks/useCrudSearch'
+import { usePageMetadata } from '../contexts/PageMetadataContext'
 
 type ClientOption = {
   id: string
@@ -117,6 +46,8 @@ type AnnouncementRow = {
   announcement_clients: { client_id: string }[]
 }
 
+const ANNOUNCEMENT_ENTITY: CrudEntityLabel = { singular: 'comunicado', plural: 'comunicados' }
+
 const ANNOUNCEMENT_TYPE_LABELS: Record<AnnouncementType, string> = {
   alerta: 'Alerta',
   aviso: 'Aviso',
@@ -124,19 +55,19 @@ const ANNOUNCEMENT_TYPE_LABELS: Record<AnnouncementType, string> = {
   pendencia: 'Pendência',
 }
 
-const ANNOUNCEMENT_TYPE_DOT_COLORS: Record<AnnouncementType, string> = {
-  alerta: 'bg-red-500',
-  aviso: 'bg-amber-500',
-  normal: 'bg-primary-500',
-  pendencia: 'bg-purple-500',
+const ANNOUNCEMENT_TYPE_BADGE_VARIANTS: Record<AnnouncementType, 'danger' | 'warning' | 'info' | 'secondary'> = {
+  alerta: 'danger',
+  aviso: 'warning',
+  normal: 'info',
+  pendencia: 'secondary',
 }
 
-const ANNOUNCEMENT_TYPE_TEXT_COLORS: Record<AnnouncementType, string> = {
-  alerta: 'text-red-400',
-  aviso: 'text-amber-400',
-  normal: 'text-primary-400',
-  pendencia: 'text-purple-400',
-}
+const ANNOUNCEMENT_TYPE_FILTER_OPTIONS = (Object.keys(ANNOUNCEMENT_TYPE_LABELS) as AnnouncementType[]).map((value) => ({
+  value,
+  label: ANNOUNCEMENT_TYPE_LABELS[value],
+}))
+
+const SCHEDULE_FILTER_OPTIONS = [{ value: 'scheduled', label: 'Agendados' }]
 
 const AUDIENCE_TYPE_LABELS: Record<AudienceType, string> = {
   all: 'Todos',
@@ -144,7 +75,8 @@ const AUDIENCE_TYPE_LABELS: Record<AudienceType, string> = {
   group: 'Grupo selecionado',
 }
 
-const PAGE_SIZE_OPTIONS = [10, 25, 50]
+const textareaClassName =
+  'flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
 
 function mapAnnouncementRow(row: AnnouncementRow): Announcement {
   return {
@@ -186,11 +118,9 @@ export function AnnouncementsPage() {
   const [clients, setClients] = useState<ClientOption[] | null>(null)
   const [clientsError, setClientsError] = useState<string | null>(null)
 
-  const [tab, setTab] = useState<'all' | 'scheduled'>('all')
-  const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
-
+  const search = useCrudSearch()
+  const [scheduleFilter, setScheduleFilter] = useState<string | null>(null)
+  const [typeFilter, setTypeFilter] = useState<string | null>(null)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null)
@@ -239,36 +169,21 @@ export function AnnouncementsPage() {
   const totalAnnouncements = announcements?.length ?? 0
   const totalScheduled = announcements?.filter((item) => item.eventAt !== null).length ?? 0
 
+  usePageMetadata({
+    title: 'Comunicados',
+    subtitle: `${totalAnnouncements} no total · ${totalScheduled} agendados`,
+  })
+
   const filteredAnnouncements = useMemo(() => {
-    const query = search.trim().toLowerCase()
+    const query = search.term.trim().toLowerCase()
     return (announcements ?? [])
-      .filter((item) => (tab === 'scheduled' ? item.eventAt !== null : true))
+      .filter((item) => (scheduleFilter === 'scheduled' ? item.eventAt !== null : true))
+      .filter((item) => (typeFilter === null ? true : item.type === typeFilter))
       .filter((item) => {
         if (!query) return true
         return item.title.toLowerCase().includes(query) || item.message.toLowerCase().includes(query)
       })
-  }, [announcements, tab, search])
-
-  const totalPages = Math.max(1, Math.ceil(filteredAnnouncements.length / pageSize))
-  const currentPage = Math.min(page, totalPages)
-  const pageStart = filteredAnnouncements.length === 0 ? 0 : (currentPage - 1) * pageSize + 1
-  const pageEnd = Math.min(currentPage * pageSize, filteredAnnouncements.length)
-  const pageAnnouncements = filteredAnnouncements.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-
-  function handleTabChange(nextTab: 'all' | 'scheduled') {
-    setTab(nextTab)
-    setPage(1)
-  }
-
-  function handleSearchChange(value: string) {
-    setSearch(value)
-    setPage(1)
-  }
-
-  function handlePageSizeChange(value: number) {
-    setPageSize(value)
-    setPage(1)
-  }
+  }, [announcements, scheduleFilter, typeFilter, search.term])
 
   function handleAudienceTypeChange(next: AudienceType) {
     setAudienceType(next)
@@ -391,196 +306,83 @@ export function AnnouncementsPage() {
     await loadAnnouncements()
   }
 
+  const columns: TableColumn<Announcement>[] = [
+    {
+      key: 'title',
+      header: 'Comunicado',
+      render: (announcement) => (
+        <div className="min-w-0">
+          <p className="truncate font-medium text-foreground">{announcement.title}</p>
+          <p className="truncate text-xs text-muted-foreground">{announcement.message}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'type',
+      header: 'Tipo',
+      render: (announcement) => (
+        <Badge variant={ANNOUNCEMENT_TYPE_BADGE_VARIANTS[announcement.type]}>
+          {ANNOUNCEMENT_TYPE_LABELS[announcement.type]}
+        </Badge>
+      ),
+    },
+    {
+      key: 'eventAt',
+      header: 'Data vinculada',
+      render: (announcement) => (
+        <span className="text-muted-foreground">{announcement.eventAt ? formatEventDate(announcement.eventAt) : '—'}</span>
+      ),
+    },
+    {
+      key: 'audienceType',
+      header: 'Destinatários',
+      render: (announcement) => <span className="text-muted-foreground">{audienceLabel(announcement)}</span>,
+    },
+  ]
+
+  const filterDefs: CrudFilterDef[] = [
+    {
+      key: 'schedule',
+      label: 'Agendamento',
+      options: SCHEDULE_FILTER_OPTIONS,
+      value: scheduleFilter,
+      onChange: setScheduleFilter,
+      defaultVisible: true,
+    },
+    {
+      key: 'type',
+      label: 'Tipo',
+      options: ANNOUNCEMENT_TYPE_FILTER_OPTIONS,
+      value: typeFilter,
+      onChange: setTypeFilter,
+      defaultVisible: true,
+    },
+  ]
+
+  const rowActionsOf = (announcement: Announcement): CrudRowAction[] => [
+    { label: 'Editar', onSelect: () => openEditModal(announcement) },
+    { label: 'Excluir', onSelect: () => handleDelete(announcement), tone: 'destructive' },
+  ]
+
   return (
-    <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-100">Comunicados</h2>
-          <p className="mt-1 text-sm text-gray-400">{totalAnnouncements} no total</p>
-          <div className="mt-3 flex flex-wrap items-center gap-5 text-sm text-gray-400">
-            <span className="flex items-center gap-1.5">
-              <MegaphoneStatIcon className="h-4 w-4 text-gray-500" />
-              {totalAnnouncements} comunicados
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CalendarStatIcon className="h-4 w-4 text-gray-500" />
-              {totalScheduled} agendados
-            </span>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={openCreateModal}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          <PlusIcon className="h-4 w-4" />
-          Novo comunicado
-        </button>
-      </div>
-
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 rounded-lg bg-gray-800 p-1">
-          <button
-            type="button"
-            onClick={() => handleTabChange('all')}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'all' ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
-            }`}
-          >
-            Todos {totalAnnouncements}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTabChange('scheduled')}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'scheduled' ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
-            }`}
-          >
-            Agendados {totalScheduled}
-          </button>
-        </div>
-
-        <div className="relative w-full sm:w-auto">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-          <input
-            type="text"
-            value={search}
-            onChange={(event) => handleSearchChange(event.target.value)}
-            placeholder="Buscar comunicado..."
-            className="w-full rounded-lg border border-gray-800 bg-gray-800 py-2 pl-9 pr-3 text-sm focus:border-gray-600 focus:outline-none sm:w-64"
-          />
-        </div>
-      </div>
-
-      <div className="mt-4 rounded-lg border border-gray-800 bg-gray-900">
-        {loadError && (
-          <div className="flex items-center justify-between p-4 text-sm text-red-400">
-            {loadError}
-            <button type="button" onClick={loadAnnouncements} className="font-medium underline">
-              Tentar novamente
-            </button>
-          </div>
-        )}
-
-        {!loadError && announcements === null && <p className="p-6 text-sm text-gray-500">Carregando...</p>}
-
-        {!loadError && announcements !== null && (
-          <div className="overflow-x-auto overflow-y-visible">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-gray-800 text-xs uppercase tracking-wide text-gray-500">
-                <th className="px-4 py-3 font-medium">Comunicado</th>
-                <th className="px-4 py-3 font-medium">Tipo</th>
-                <th className="px-4 py-3 font-medium">Data vinculada</th>
-                <th className="px-4 py-3 font-medium">Destinatários</th>
-                <th className="px-4 py-3 font-medium">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pageAnnouncements.map((announcement) => (
-                <tr key={announcement.id} className="border-b border-gray-800 last:border-0">
-                  <td className="px-4 py-3">
-                    <div className="min-w-0">
-                      <p className="truncate font-medium text-gray-100">{announcement.title}</p>
-                      <p className="truncate text-xs text-gray-400">{announcement.message}</p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="flex items-center gap-1.5 text-sm">
-                      <span className={`h-1.5 w-1.5 rounded-full ${ANNOUNCEMENT_TYPE_DOT_COLORS[announcement.type]}`} />
-                      <span className={ANNOUNCEMENT_TYPE_TEXT_COLORS[announcement.type]}>
-                        {ANNOUNCEMENT_TYPE_LABELS[announcement.type]}
-                      </span>
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-400">
-                    {announcement.eventAt ? formatEventDate(announcement.eventAt) : '—'}
-                  </td>
-                  <td className="px-4 py-3 text-gray-400">{audienceLabel(announcement)}</td>
-                  <td className="px-4 py-3">
-                    <ActionMenu
-                      items={[
-                        { label: 'Editar', onClick: () => openEditModal(announcement) },
-                        { label: 'Excluir', onClick: () => handleDelete(announcement), danger: true },
-                      ]}
-                    />
-                  </td>
-                </tr>
-              ))}
-              {pageAnnouncements.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-500">
-                    Nenhum comunicado encontrado.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          </div>
-        )}
-
-        {!loadError && announcements !== null && (
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-800 px-4 py-3 text-sm text-gray-400">
-            <div className="flex items-center gap-2">
-              <span>Registros por página</span>
-              <select
-                value={pageSize}
-                onChange={(event) => handlePageSizeChange(Number(event.target.value))}
-                className="rounded-md border border-gray-800 bg-gray-900 px-2 py-1 text-sm focus:outline-none"
-              >
-                {PAGE_SIZE_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <span>
-              {pageStart}-{pageEnd} de {filteredAnnouncements.length} itens
-            </span>
-
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setPage(1)}
-                disabled={currentPage === 1}
-                className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
-              >
-                <ChevronsLeftIcon className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage((value) => Math.max(1, value - 1))}
-                disabled={currentPage === 1}
-                className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
-              >
-                <ChevronLeftIcon className="h-4 w-4" />
-              </button>
-              <span className="px-2">
-                {currentPage} de {totalPages}
-              </span>
-              <button
-                type="button"
-                onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
-                disabled={currentPage === totalPages}
-                className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
-              >
-                <ChevronRightIcon className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage(totalPages)}
-                disabled={currentPage === totalPages}
-                className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
-              >
-                <ChevronsRightIcon className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+    <div className="h-full">
+      <CrudListPage<Announcement>
+        entity={ANNOUNCEMENT_ENTITY}
+        rows={filteredAnnouncements}
+        columns={columns}
+        isLoading={announcements === null && !loadError}
+        isError={loadError !== null}
+        onRetry={loadAnnouncements}
+        search={search}
+        searchPlaceholder="Buscar comunicado..."
+        filterDefs={filterDefs}
+        hasActiveFilters={scheduleFilter !== null || typeFilter !== null}
+        resetKey={`${scheduleFilter ?? ''}|${typeFilter ?? ''}`}
+        onNew={openCreateModal}
+        newLabel="Novo comunicado"
+        newIcon={Plus}
+        rowActions={rowActionsOf}
+      />
 
       <Dialog
         open={modalOpen}
@@ -590,130 +392,127 @@ export function AnnouncementsPage() {
       >
         <form onSubmit={handleSave} className="space-y-4">
           <div className="space-y-1.5">
-            <label htmlFor="announcement-title" className="text-sm font-medium text-gray-300">
-              Título
-            </label>
-            <input
+            <Label htmlFor="announcement-title">Título</Label>
+            <Input
               id="announcement-title"
               type="text"
               required
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="announcement-message" className="text-sm font-medium text-gray-300">
-              Mensagem
-            </label>
+            <Label htmlFor="announcement-message">Mensagem</Label>
             <textarea
               id="announcement-message"
               rows={3}
               required
               value={message}
               onChange={(event) => setMessage(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              className={textareaClassName}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="announcement-type" className="text-sm font-medium text-gray-300">
-              Tipo
-            </label>
-            <select
-              id="announcement-type"
-              value={announcementType}
-              onChange={(event) => setAnnouncementType(event.target.value as AnnouncementType)}
-              className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-            >
-              {(Object.keys(ANNOUNCEMENT_TYPE_LABELS) as AnnouncementType[]).map((option) => (
-                <option key={option} value={option}>
-                  {ANNOUNCEMENT_TYPE_LABELS[option]}
-                </option>
-              ))}
-            </select>
+            <Label htmlFor="announcement-type">Tipo</Label>
+            <Select value={announcementType} onValueChange={(value) => setAnnouncementType(value as AnnouncementType)}>
+              <SelectTrigger id="announcement-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(ANNOUNCEMENT_TYPE_LABELS) as AnnouncementType[]).map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {ANNOUNCEMENT_TYPE_LABELS[option]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-800/60 p-4">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-300">
-              <input
-                type="checkbox"
+          <div className="space-y-3 rounded-xl border bg-muted/60 p-4">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="announcement-has-event-date"
                 checked={hasEventDate}
-                onChange={(event) => setHasEventDate(event.target.checked)}
-                className="h-4 w-4 rounded border-gray-700 accent-primary-600"
+                onCheckedChange={(checked) => setHasEventDate(checked === true)}
               />
-              Vincular a uma data no calendário
-            </label>
+              <Label htmlFor="announcement-has-event-date">Vincular a uma data no calendário</Label>
+            </div>
 
             {hasEventDate && (
-              <input
+              <Input
                 type="date"
                 required
                 value={eventDate}
                 onChange={(event) => setEventDate(event.target.value)}
-                className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                aria-label="Data vinculada"
               />
             )}
           </div>
 
-          <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-800/60 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Destinatários</p>
-            <div className="flex items-center gap-1 rounded-lg bg-gray-800 p-1">
+          <div className="space-y-3 rounded-xl border bg-muted/60 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Destinatários</p>
+            <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
               {(Object.keys(AUDIENCE_TYPE_LABELS) as AudienceType[]).map((option) => (
-                <button
+                <Button
                   key={option}
                   type="button"
+                  size="sm"
+                  variant={audienceType === option ? 'primary' : 'ghost'}
                   onClick={() => handleAudienceTypeChange(option)}
-                  className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium ${
-                    audienceType === option ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
-                  }`}
+                  className="flex-1"
                 >
                   {AUDIENCE_TYPE_LABELS[option]}
-                </button>
+                </Button>
               ))}
             </div>
 
             {audienceType !== 'all' && (
               <div className="space-y-2">
-                <input
+                <Input
                   type="text"
                   value={audienceQuery}
                   onChange={(event) => setAudienceQuery(event.target.value)}
                   placeholder="Buscar pessoa..."
-                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  aria-label="Buscar pessoa"
                 />
 
                 {clientsError && (
-                  <div className="flex items-center justify-between text-sm text-red-400">
+                  <div className="flex items-center justify-between text-sm text-destructive">
                     {clientsError}
-                    <button type="button" onClick={loadClients} className="font-medium underline">
+                    <Button type="button" variant="link" size="sm" onClick={loadClients}>
                       Tentar novamente
-                    </button>
+                    </Button>
                   </div>
                 )}
 
                 <div className="max-h-32 space-y-0.5 overflow-y-auto">
-                  {!clientsError && clients === null && <p className="px-2 py-1 text-sm text-gray-500">Carregando...</p>}
+                  {!clientsError && clients === null && (
+                    <p className="px-2 py-1 text-sm text-muted-foreground">Carregando...</p>
+                  )}
                   {!clientsError && clients !== null && filteredAudienceClients.length === 0 && (
-                    <p className="px-2 py-1 text-sm text-gray-500">Nenhuma pessoa encontrada.</p>
+                    <p className="px-2 py-1 text-sm text-muted-foreground">Nenhuma pessoa encontrada.</p>
                   )}
                   {filteredAudienceClients.map((client) => (
                     <label
                       key={client.id}
-                      className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-800"
+                      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-accent"
                     >
-                      <input
-                        type={audienceType === 'individual' ? 'radio' : 'checkbox'}
-                        name={audienceType === 'individual' ? 'announcement-individual' : undefined}
-                        checked={audienceClientIds.includes(client.id)}
-                        onChange={() => handleToggleAudienceClient(client.id)}
-                        className={
-                          audienceType === 'individual'
-                            ? 'h-4 w-4 border-gray-700 accent-primary-600'
-                            : 'h-4 w-4 rounded border-gray-700 accent-primary-600'
-                        }
-                      />
+                      {audienceType === 'individual' ? (
+                        <input
+                          type="radio"
+                          name="announcement-individual"
+                          checked={audienceClientIds.includes(client.id)}
+                          onChange={() => handleToggleAudienceClient(client.id)}
+                          className="h-4 w-4 accent-primary"
+                        />
+                      ) : (
+                        <Checkbox
+                          checked={audienceClientIds.includes(client.id)}
+                          onCheckedChange={() => handleToggleAudienceClient(client.id)}
+                        />
+                      )}
                       {client.name ?? displayNameFromEmail(client.email)}
                     </label>
                   ))}
@@ -722,23 +521,15 @@ export function AnnouncementsPage() {
             )}
           </div>
 
-          {formError && <p className="text-sm text-red-400">{formError}</p>}
+          {formError && <p className="text-sm text-destructive">{formError}</p>}
 
-          <div className="flex items-center justify-end gap-2 border-t border-gray-800 pt-4">
-            <button
-              type="button"
-              onClick={() => setModalOpen(false)}
-              className="rounded-lg border border-gray-700 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800"
-            >
+          <div className="flex items-center justify-end gap-2 border-t pt-4">
+            <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
               Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
-            >
+            </Button>
+            <Button type="submit" disabled={submitting}>
               {submitting ? 'Salvando...' : 'Salvar'}
-            </button>
+            </Button>
           </div>
         </form>
       </Dialog>

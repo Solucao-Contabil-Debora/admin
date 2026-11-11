@@ -3,98 +3,18 @@ import type { FormEvent } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { displayNameFromEmail } from '../lib/displayName'
 import { extractErrorMessage } from '../lib/functionErrors'
+import { Download, Search } from 'lucide-react'
 import { Dialog } from '../components/Dialog'
-import { ActionMenu } from '../components/ActionMenu'
-
-type IconProps = {
-  className?: string
-}
-
-function PlusIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function SearchIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.75" />
-      <path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function InboxStatIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path
-        d="M3.5 13.5 6 5.7A1.5 1.5 0 0 1 7.4 4.5h9.2a1.5 1.5 0 0 1 1.4 1.2l2.5 7.8"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M3.5 13.5h5.2l1 2h4.6l1-2h5.2v4a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-4Z"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function CheckStatIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.75" />
-      <path d="m8.5 12.3 2.4 2.4 4.6-4.9" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function DownloadIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M12 4v11.5M8 12l4 4 4-4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M4.5 17.5V19a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function ChevronsLeftIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function ChevronLeftIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="m15 17-5-5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function ChevronRightIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="m9 17 5-5-5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function ChevronsRightIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="m6 17 5-5-5-5M13 17l5-5-5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
+import { Badge } from '../components/ui/badge'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
+import { CrudListPage } from '../components/crud'
+import type { CrudEntityLabel, CrudFilterDef, CrudRowAction } from '../components/crud'
+import type { TableColumn } from '../components/types/crud'
+import { useCrudSearch } from '../hooks/useCrudSearch'
+import { usePageMetadata } from '../contexts/PageMetadataContext'
 
 type ClientOption = {
   id: string
@@ -146,16 +66,10 @@ const RESPONSE_TYPE_LABELS: Record<ResponseType, string> = {
   data: 'Data',
 }
 
-const RESPONSE_TYPE_DOT_COLORS: Record<ResponseType, string> = {
-  arquivo: 'bg-indigo-500',
-  texto: 'bg-primary-500',
-  data: 'bg-teal-500',
-}
-
-const RESPONSE_TYPE_TEXT_COLORS: Record<ResponseType, string> = {
-  arquivo: 'text-indigo-400',
-  texto: 'text-primary-400',
-  data: 'text-teal-400',
+const RESPONSE_TYPE_BADGE_VARIANTS: Record<ResponseType, 'info' | 'secondary' | 'outline'> = {
+  arquivo: 'info',
+  texto: 'secondary',
+  data: 'outline',
 }
 
 const AUDIENCE_TYPE_LABELS: Record<AudienceType, string> = {
@@ -164,7 +78,22 @@ const AUDIENCE_TYPE_LABELS: Record<AudienceType, string> = {
   group: 'Grupo selecionado',
 }
 
-const PAGE_SIZE_OPTIONS = [10, 25, 50]
+const REQUEST_ENTITY: CrudEntityLabel = { singular: 'solicitação', plural: 'solicitações', feminine: true }
+
+const STATUS_FILTER_OPTIONS = [
+  { value: 'pending', label: 'Pendentes' },
+  { value: 'done', label: 'Concluídas' },
+]
+
+const TYPE_FILTER_OPTIONS = (Object.keys(RESPONSE_TYPE_LABELS) as ResponseType[]).map((value) => ({
+  value,
+  label: RESPONSE_TYPE_LABELS[value],
+}))
+
+const PAGE_SIZE = 10
+
+const textareaClassName =
+  'flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
 
 function mapRequestRow(row: RequestRow): RequestItem {
   return {
@@ -223,11 +152,9 @@ export function RequestsPage() {
   const [clients, setClients] = useState<ClientOption[] | null>(null)
   const [clientsError, setClientsError] = useState<string | null>(null)
 
-  const [tab, setTab] = useState<'all' | 'pending'>('all')
-  const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
-
+  const search = useCrudSearch()
+  const [statusFilter, setStatusFilter] = useState<string | null>(null)
+  const [typeFilter, setTypeFilter] = useState<string | null>(null)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingRequest, setEditingRequest] = useState<RequestItem | null>(null)
@@ -286,25 +213,15 @@ export function RequestsPage() {
   )
 
   const filteredRequests = useMemo(() => {
-    const query = search.trim().toLowerCase()
+    const query = search.term.trim().toLowerCase()
     return (requests ?? [])
-      .filter((item) => (tab === 'pending' ? isPending(item, totalClients) : true))
+      .filter((item) => statusFilter === null || isPending(item, totalClients) === (statusFilter === 'pending'))
+      .filter((item) => typeFilter === null || item.responseType === typeFilter)
       .filter((item) => {
         if (!query) return true
         return item.title.toLowerCase().includes(query) || (item.description ?? '').toLowerCase().includes(query)
       })
-  }, [requests, tab, search, totalClients])
-
-  const totalPending = useMemo(
-    () => (requests ?? []).filter((item) => isPending(item, totalClients)).length,
-    [requests, totalClients],
-  )
-
-  const totalPages = Math.max(1, Math.ceil(filteredRequests.length / pageSize))
-  const currentPage = Math.min(page, totalPages)
-  const pageStart = filteredRequests.length === 0 ? 0 : (currentPage - 1) * pageSize + 1
-  const pageEnd = Math.min(currentPage * pageSize, filteredRequests.length)
-  const pageRequests = filteredRequests.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  }, [requests, statusFilter, typeFilter, search.term, totalClients])
 
   const detailTargetClients = useMemo(() => {
     if (!detailRequest || !clients) return []
@@ -317,21 +234,6 @@ export function RequestsPage() {
       (a.name ?? displayNameFromEmail(a.email)).localeCompare(b.name ?? displayNameFromEmail(b.email)),
     )
   }, [detailRequest, clients, detailQuery])
-
-  function handleTabChange(nextTab: 'all' | 'pending') {
-    setTab(nextTab)
-    setPage(1)
-  }
-
-  function handleSearchChange(value: string) {
-    setSearch(value)
-    setPage(1)
-  }
-
-  function handlePageSizeChange(value: number) {
-    setPageSize(value)
-    setPage(1)
-  }
 
   function handleAudienceTypeChange(next: AudienceType) {
     setAudienceType(next)
@@ -482,202 +384,93 @@ export function RequestsPage() {
     window.open(data.signedUrl, '_blank')
   }
 
+  usePageMetadata({
+    title: 'Solicitações',
+    subtitle: `${totalRequests} solicitações · ${totalResponses} respostas recebidas`,
+  })
+
+  const columns: TableColumn<RequestItem>[] = [
+    {
+      key: 'title',
+      header: 'Solicitação',
+      render: (request) => (
+        <div className="min-w-0">
+          <p className="truncate font-medium text-foreground">{request.title}</p>
+          {request.description && <p className="truncate text-xs text-muted-foreground">{request.description}</p>}
+        </div>
+      ),
+    },
+    {
+      key: 'responseType',
+      header: 'Tipo',
+      render: (request) => (
+        <Badge variant={RESPONSE_TYPE_BADGE_VARIANTS[request.responseType]}>
+          {RESPONSE_TYPE_LABELS[request.responseType]}
+        </Badge>
+      ),
+    },
+    {
+      key: 'audienceType',
+      header: 'Destinatários',
+      render: (request) => <span className="text-muted-foreground">{audienceLabel(request)}</span>,
+    },
+    {
+      key: 'respondedClientIds',
+      header: 'Respostas',
+      render: (request) => (
+        <span className="text-muted-foreground">
+          <span className="font-medium text-foreground">{request.respondedClientIds.length}</span>
+          {' / '}
+          {targetCount(request, totalClients)} enviaram
+        </span>
+      ),
+    },
+  ]
+
+  const filterDefs: CrudFilterDef[] = [
+    {
+      key: 'status',
+      label: 'Situação',
+      options: STATUS_FILTER_OPTIONS,
+      value: statusFilter,
+      onChange: setStatusFilter,
+      defaultVisible: true,
+    },
+    {
+      key: 'type',
+      label: 'Tipo',
+      options: TYPE_FILTER_OPTIONS,
+      value: typeFilter,
+      onChange: setTypeFilter,
+      defaultVisible: true,
+    },
+  ]
+
+  const rowActionsOf = (request: RequestItem): CrudRowAction[] => [
+    { label: 'Editar', onSelect: () => openEditModal(request) },
+    { label: 'Excluir', onSelect: () => handleDelete(request), tone: 'destructive' },
+  ]
+
   return (
-    <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-100">Solicitações</h2>
-          <p className="mt-1 text-sm text-gray-400">{totalRequests} no total</p>
-          <div className="mt-3 flex flex-wrap items-center gap-5 text-sm text-gray-400">
-            <span className="flex items-center gap-1.5">
-              <InboxStatIcon className="h-4 w-4 text-gray-500" />
-              {totalRequests} solicitações
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckStatIcon className="h-4 w-4 text-gray-500" />
-              {totalResponses} respostas recebidas
-            </span>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={openCreateModal}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          <PlusIcon className="h-4 w-4" />
-          Nova solicitação
-        </button>
-      </div>
-
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 rounded-lg bg-gray-800 p-1">
-          <button
-            type="button"
-            onClick={() => handleTabChange('all')}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'all' ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
-            }`}
-          >
-            Todas {totalRequests}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTabChange('pending')}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              tab === 'pending' ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
-            }`}
-          >
-            Pendentes {totalPending}
-          </button>
-        </div>
-
-        <div className="relative w-full sm:w-auto">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-          <input
-            type="text"
-            value={search}
-            onChange={(event) => handleSearchChange(event.target.value)}
-            placeholder="Buscar solicitação..."
-            className="w-full rounded-lg border border-gray-800 bg-gray-800 py-2 pl-9 pr-3 text-sm focus:border-gray-600 focus:outline-none sm:w-64"
-          />
-        </div>
-      </div>
-
-      <div className="mt-4 rounded-lg border border-gray-800 bg-gray-900">
-        {loadError && (
-          <div className="flex items-center justify-between p-4 text-sm text-red-400">
-            {loadError}
-            <button type="button" onClick={loadRequests} className="font-medium underline">
-              Tentar novamente
-            </button>
-          </div>
-        )}
-
-        {!loadError && requests === null && <p className="p-6 text-sm text-gray-500">Carregando...</p>}
-
-        {!loadError && requests !== null && (
-          <div className="overflow-x-auto overflow-y-visible">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-gray-800 text-xs uppercase tracking-wide text-gray-500">
-                <th className="px-4 py-3 font-medium">Solicitação</th>
-                <th className="px-4 py-3 font-medium">Tipo</th>
-                <th className="px-4 py-3 font-medium">Destinatários</th>
-                <th className="px-4 py-3 font-medium">Respostas</th>
-                <th className="px-4 py-3 font-medium">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pageRequests.map((request) => (
-                <tr
-                  key={request.id}
-                  onClick={() => openDetail(request)}
-                  className="cursor-pointer border-b border-gray-800 last:border-0 hover:bg-gray-800"
-                >
-                  <td className="px-4 py-3">
-                    <div className="min-w-0">
-                      <p className="truncate font-medium text-gray-100">{request.title}</p>
-                      {request.description && <p className="truncate text-xs text-gray-400">{request.description}</p>}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="flex items-center gap-1.5 text-sm">
-                      <span className={`h-1.5 w-1.5 rounded-full ${RESPONSE_TYPE_DOT_COLORS[request.responseType]}`} />
-                      <span className={RESPONSE_TYPE_TEXT_COLORS[request.responseType]}>
-                        {RESPONSE_TYPE_LABELS[request.responseType]}
-                      </span>
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-400">{audienceLabel(request)}</td>
-                  <td className="px-4 py-3 text-gray-400">
-                    <span className="font-medium text-gray-100">{request.respondedClientIds.length}</span>
-                    {' / '}
-                    {targetCount(request, totalClients)} enviaram
-                  </td>
-                  <td className="px-4 py-3" onClick={(event) => event.stopPropagation()}>
-                    <ActionMenu
-                      items={[
-                        { label: 'Editar', onClick: () => openEditModal(request) },
-                        { label: 'Excluir', onClick: () => handleDelete(request), danger: true },
-                      ]}
-                    />
-                  </td>
-                </tr>
-              ))}
-              {pageRequests.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-500">
-                    Nenhuma solicitação encontrada.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          </div>
-        )}
-
-        {!loadError && requests !== null && (
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-800 px-4 py-3 text-sm text-gray-400">
-            <div className="flex items-center gap-2">
-              <span>Registros por página</span>
-              <select
-                value={pageSize}
-                onChange={(event) => handlePageSizeChange(Number(event.target.value))}
-                className="rounded-md border border-gray-800 bg-gray-900 px-2 py-1 text-sm focus:outline-none"
-              >
-                {PAGE_SIZE_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <span>
-              {pageStart}-{pageEnd} de {filteredRequests.length} itens
-            </span>
-
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setPage(1)}
-                disabled={currentPage === 1}
-                className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
-              >
-                <ChevronsLeftIcon className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage((value) => Math.max(1, value - 1))}
-                disabled={currentPage === 1}
-                className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
-              >
-                <ChevronLeftIcon className="h-4 w-4" />
-              </button>
-              <span className="px-2">
-                {currentPage} de {totalPages}
-              </span>
-              <button
-                type="button"
-                onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
-                disabled={currentPage === totalPages}
-                className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
-              >
-                <ChevronRightIcon className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage(totalPages)}
-                disabled={currentPage === totalPages}
-                className="rounded-md p-1.5 hover:bg-gray-800 disabled:opacity-30"
-              >
-                <ChevronsRightIcon className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+    <div className="h-full">
+      <CrudListPage<RequestItem>
+        entity={REQUEST_ENTITY}
+        rows={filteredRequests}
+        columns={columns}
+        isLoading={requests === null && !loadError}
+        isError={loadError !== null}
+        onRetry={loadRequests}
+        search={search}
+        searchPlaceholder="Buscar solicitação..."
+        filterDefs={filterDefs}
+        hasActiveFilters={statusFilter !== null || typeFilter !== null}
+        resetKey={`${statusFilter ?? ''}|${typeFilter ?? ''}`}
+        onNew={openCreateModal}
+        newLabel="Nova solicitação"
+        onRowClick={openDetail}
+        rowActions={rowActionsOf}
+        pageSize={PAGE_SIZE}
+      />
 
       <Dialog
         open={modalOpen}
@@ -687,106 +480,96 @@ export function RequestsPage() {
       >
         <form onSubmit={handleSave} className="space-y-4">
           <div className="space-y-1.5">
-            <label htmlFor="request-title" className="text-sm font-medium text-gray-300">
-              Título
-            </label>
-            <input
+            <Label htmlFor="request-title">Título</Label>
+            <Input
               id="request-title"
               type="text"
               required
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="request-description" className="text-sm font-medium text-gray-300">
-              Descrição
-            </label>
+            <Label htmlFor="request-description">Descrição</Label>
             <textarea
               id="request-description"
               rows={3}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              className="w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              className={textareaClassName}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="request-type" className="text-sm font-medium text-gray-300">
-              Tipo de dado esperado
-            </label>
-            <select
-              id="request-type"
-              value={responseType}
-              onChange={(event) => setResponseType(event.target.value as ResponseType)}
-              className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
-            >
-              {(Object.keys(RESPONSE_TYPE_LABELS) as ResponseType[]).map((option) => (
-                <option key={option} value={option}>
-                  {RESPONSE_TYPE_LABELS[option]}
-                </option>
-              ))}
-            </select>
+            <Label htmlFor="request-type">Tipo de dado esperado</Label>
+            <Select value={responseType} onValueChange={(value) => setResponseType(value as ResponseType)}>
+              <SelectTrigger id="request-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(RESPONSE_TYPE_LABELS) as ResponseType[]).map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {RESPONSE_TYPE_LABELS[option]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-800/60 p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Destinatários</p>
-            <div className="flex items-center gap-1 rounded-lg bg-gray-800 p-1">
+          <div className="space-y-3 rounded-xl border bg-muted/60 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Destinatários</p>
+            <div className="flex items-center gap-1">
               {(Object.keys(AUDIENCE_TYPE_LABELS) as AudienceType[]).map((option) => (
-                <button
+                <Button
                   key={option}
                   type="button"
+                  size="sm"
+                  variant={audienceType === option ? 'primary' : 'outline'}
                   onClick={() => handleAudienceTypeChange(option)}
-                  className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium ${
-                    audienceType === option ? 'bg-gray-900 text-primary-400 shadow-sm' : 'text-gray-400 hover:text-gray-300'
-                  }`}
+                  className="flex-1"
                 >
                   {AUDIENCE_TYPE_LABELS[option]}
-                </button>
+                </Button>
               ))}
             </div>
 
             {audienceType !== 'all' && (
               <div className="space-y-2">
-                <input
+                <Input
                   type="text"
                   value={audienceQuery}
                   onChange={(event) => setAudienceQuery(event.target.value)}
                   placeholder="Buscar pessoa..."
-                  className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                 />
 
                 {clientsError && (
-                  <div className="flex items-center justify-between text-sm text-red-400">
+                  <div className="flex items-center justify-between text-sm text-destructive">
                     {clientsError}
-                    <button type="button" onClick={loadClients} className="font-medium underline">
+                    <Button type="button" variant="link" size="sm" onClick={loadClients}>
                       Tentar novamente
-                    </button>
+                    </Button>
                   </div>
                 )}
 
                 <div className="max-h-32 space-y-0.5 overflow-y-auto">
-                  {!clientsError && clients === null && <p className="px-2 py-1 text-sm text-gray-500">Carregando...</p>}
+                  {!clientsError && clients === null && (
+                    <p className="px-2 py-1 text-sm text-muted-foreground">Carregando...</p>
+                  )}
                   {!clientsError && clients !== null && filteredAudienceClients.length === 0 && (
-                    <p className="px-2 py-1 text-sm text-gray-500">Nenhuma pessoa encontrada.</p>
+                    <p className="px-2 py-1 text-sm text-muted-foreground">Nenhuma pessoa encontrada.</p>
                   )}
                   {filteredAudienceClients.map((client) => (
                     <label
                       key={client.id}
-                      className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-800"
+                      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-accent"
                     >
                       <input
                         type={audienceType === 'individual' ? 'radio' : 'checkbox'}
                         name={audienceType === 'individual' ? 'request-individual' : undefined}
                         checked={audienceClientIds.includes(client.id)}
                         onChange={() => handleToggleAudienceClient(client.id)}
-                        className={
-                          audienceType === 'individual'
-                            ? 'h-4 w-4 border-gray-700 accent-primary-600'
-                            : 'h-4 w-4 rounded border-gray-700 accent-primary-600'
-                        }
+                        className={audienceType === 'individual' ? 'h-4 w-4 accent-primary' : 'h-4 w-4 rounded accent-primary'}
                       />
                       {client.name ?? displayNameFromEmail(client.email)}
                     </label>
@@ -796,23 +579,15 @@ export function RequestsPage() {
             )}
           </div>
 
-          {formError && <p className="text-sm text-red-400">{formError}</p>}
+          {formError && <p className="text-sm text-destructive">{formError}</p>}
 
-          <div className="flex items-center justify-end gap-2 border-t border-gray-800 pt-4">
-            <button
-              type="button"
-              onClick={() => setModalOpen(false)}
-              className="rounded-lg border border-gray-700 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800"
-            >
+          <div className="flex items-center justify-end gap-2 border-t pt-4">
+            <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
               Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
-            >
+            </Button>
+            <Button type="submit" disabled={submitting}>
               {submitting ? 'Salvando...' : 'Salvar'}
-            </button>
+            </Button>
           </div>
         </form>
       </Dialog>
@@ -826,91 +601,94 @@ export function RequestsPage() {
       >
         <div className="space-y-3">
           <div className="relative">
-            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-            <input
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
               type="text"
               value={detailQuery}
               onChange={(event) => setDetailQuery(event.target.value)}
               placeholder="Buscar pessoa..."
-              className="w-full rounded-lg border border-gray-800 bg-gray-800 py-2 pl-9 pr-3 text-sm focus:border-gray-600 focus:outline-none"
+              className="pl-9"
             />
           </div>
 
           {detailError && (
-            <div className="flex items-center justify-between text-sm text-red-400">
+            <div className="flex items-center justify-between text-sm text-destructive">
               {detailError}
-              <button
+              <Button
                 type="button"
+                variant="link"
+                size="sm"
                 onClick={() => detailRequest && loadDetailResponses(detailRequest.id)}
-                className="font-medium underline"
               >
                 Tentar novamente
-              </button>
+              </Button>
             </div>
           )}
 
           {clientsError && (
-            <div className="flex items-center justify-between text-sm text-red-400">
+            <div className="flex items-center justify-between text-sm text-destructive">
               {clientsError}
-              <button type="button" onClick={loadClients} className="font-medium underline">
+              <Button type="button" variant="link" size="sm" onClick={loadClients}>
                 Tentar novamente
-              </button>
+              </Button>
             </div>
           )}
 
-          {downloadError && <p className="text-sm text-red-400">{downloadError}</p>}
+          {downloadError && <p className="text-sm text-destructive">{downloadError}</p>}
 
           {!detailError && (clients === null || detailResponses === null) && (
-            <p className="py-4 text-sm text-gray-500">Carregando...</p>
+            <p className="py-4 text-sm text-muted-foreground">Carregando...</p>
           )}
 
           {!detailError && clients !== null && detailResponses !== null && (
             <div className="max-h-[26rem] space-y-2 overflow-y-auto">
-              {detailTargetClients.length === 0 && <p className="py-4 text-sm text-gray-500">Nenhuma pessoa nesta lista.</p>}
+              {detailTargetClients.length === 0 && (
+                <p className="py-4 text-sm text-muted-foreground">Nenhuma pessoa nesta lista.</p>
+              )}
               {detailTargetClients.map((client) => {
                 const response = detailResponses.get(client.id)
                 const name = client.name ?? displayNameFromEmail(client.email)
                 return (
-                  <div key={client.id} className="rounded-xl border border-gray-800 p-3">
+                  <div key={client.id} className="rounded-xl border p-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-900 text-xs font-semibold text-primary-400">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                           {name.charAt(0).toUpperCase()}
                         </span>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-gray-100">{name}</p>
-                          <p className="truncate text-xs text-gray-400">{client.email}</p>
+                          <p className="truncate text-sm font-medium text-foreground">{name}</p>
+                          <p className="truncate text-xs text-muted-foreground">{client.email}</p>
                         </div>
                       </div>
-                      <span
-                        className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                          response ? 'bg-green-950 text-green-400' : 'bg-gray-800 text-gray-400'
-                        }`}
-                      >
+                      <Badge variant={response ? 'success' : 'secondary'} className="shrink-0">
                         {response ? 'Respondido' : 'Pendente'}
-                      </span>
+                      </Badge>
                     </div>
 
                     {response && (
-                      <div className="mt-2.5 border-t border-gray-800 pt-2.5">
+                      <div className="mt-2.5 border-t pt-2.5">
                         {detailRequest?.responseType === 'arquivo' && response.filePath && (
-                          <button
+                          <Button
                             type="button"
+                            variant="link"
+                            size="sm"
                             onClick={() => handleDownload(response.filePath!)}
                             disabled={downloadingPath === response.filePath}
-                            className="flex items-center gap-1.5 text-sm font-medium text-primary-400 hover:text-primary-300 disabled:opacity-50"
+                            className="h-auto p-0"
                           >
-                            <DownloadIcon className="h-4 w-4" />
+                            <Download />
                             {downloadingPath === response.filePath ? 'Gerando link...' : 'Baixar arquivo'}
-                          </button>
+                          </Button>
                         )}
                         {detailRequest?.responseType === 'texto' && response.textValue && (
-                          <p className="text-sm text-gray-300">{response.textValue}</p>
+                          <p className="text-sm text-foreground">{response.textValue}</p>
                         )}
                         {detailRequest?.responseType === 'data' && response.dateValue && (
-                          <p className="text-sm text-gray-300">{formatDateValue(response.dateValue)}</p>
+                          <p className="text-sm text-foreground">{formatDateValue(response.dateValue)}</p>
                         )}
-                        <p className="mt-1 text-xs text-gray-500">Enviado em {formatSubmittedAt(response.submittedAt)}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Enviado em {formatSubmittedAt(response.submittedAt)}
+                        </p>
                       </div>
                     )}
                   </div>
