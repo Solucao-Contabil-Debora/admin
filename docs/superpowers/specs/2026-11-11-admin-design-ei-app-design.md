@@ -101,3 +101,5 @@ Herdam o tema. Classes dependentes da escala `gray` invertida (`text-gray-*`, `b
 - Abas viraram chips de filtro: Usuários (Papel), Solicitações (Situação, Tipo), Documentos (Tipo, obrigatório: Enviados/Recebidos), Comunicados (Agendamento, Tipo), Calendário (Cliente).
 - Removidos do tema: escala `gray` invertida, escala `primary-*`, keyframes `dialog-*` e o `logo.png`; a tela "Acesso negado" também usa tokens.
 - Pendências: `ui/textarea` e `ui/radio-group` (hoje `textarea` e radio nativos estilizados nas páginas); o chip de cliente do Calendário busca só pelo nome (antes buscava também por e-mail); título/subtítulo truncam no header em 390px.
+
+- Calendário redesenhado: mesmo quadro (`CrudPageCard`) das listagens, cabeçalho do mês com navegação e legenda, grade que ocupa a altura com etiquetas (horário + título) e "+N notas", painel do dia lateral só quando há seleção (empilha no mobile, onde as células mostram pontos). `HeaderUserMenu` com `fitContent` evita truncar o título do header no mobile.

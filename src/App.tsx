@@ -103,6 +103,7 @@ function App() {
               name={displayNameFromEmail(userEmail)}
               subtitle={userEmail}
               actions={[{ id: 'sign-out', label: 'Sair', icon: LogOut, onSelect: signOut, tone: 'destructive' }]}
+              fitContent
             />
           }
         />

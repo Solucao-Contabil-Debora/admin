@@ -5,14 +5,14 @@ import { displayNameFromEmail } from '../lib/displayName'
 import { extractErrorMessage } from '../lib/functionErrors'
 import { Dialog } from '../components/Dialog'
 import { ActionMenu } from '../components/ActionMenu'
-import { Bell, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { Bell, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react'
 import { Badge } from '../components/ui/badge'
 import { Button } from '../components/ui/button'
 import { Checkbox } from '../components/ui/checkbox'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
-import { CrudActionBarV2 } from '../components/crud'
+import { CrudActionBarV2, CrudPageCard } from '../components/crud'
 import type { CrudFilterDef } from '../components/crud'
 import { usePageMetadata } from '../contexts/PageMetadataContext'
 
@@ -58,6 +58,12 @@ const NOTE_TYPE_DOT_COLORS: Record<NoteType, string> = {
   alerta: 'bg-destructive',
   informativo: 'bg-primary',
   urgente: 'bg-warning',
+}
+
+const NOTE_TYPE_CHIP_CLASSES: Record<NoteType, string> = {
+  alerta: 'border-destructive bg-destructive/10',
+  informativo: 'border-primary bg-primary/10',
+  urgente: 'border-warning bg-warning/10',
 }
 
 const NOTE_TYPE_BADGE_VARIANTS: Record<NoteType, 'danger' | 'info' | 'warning'> = {
@@ -399,55 +405,47 @@ export function CalendarPage() {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <CrudActionBarV2
-        filters={clientFilterDefs}
-        onNew={() => openCreateModal(selectedDate ?? new Date())}
-        newButtonLabel="Nova nota"
-        newButtonIcon={Plus}
-      />
-
-      <div className="min-h-0 flex-1 overflow-y-auto p-4 md:p-6">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
+    <div className="h-full">
+      <CrudPageCard
+        actionBar={
+          <CrudActionBarV2
+            className="border-b-0 bg-muted"
+            filters={clientFilterDefs}
+            onNew={() => openCreateModal(selectedDate ?? new Date())}
+            newButtonLabel="Nova nota"
+            newButtonIcon={Plus}
+          />
+        }
+        contentClassName="flex flex-col overflow-hidden bg-card"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
+          <div className="flex items-center gap-2">
+            <h2 className="min-w-40 text-lg font-semibold text-foreground">
+              {MONTH_LABELS[viewMonth.getMonth()]} {viewMonth.getFullYear()}
+            </h2>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="icon-sm"
               aria-label="Mês anterior"
               onClick={() => setViewMonth((month) => addMonths(month, -1))}
             >
               <ChevronLeft />
             </Button>
-            <span className="w-36 text-center text-sm font-medium text-foreground">
-              {MONTH_LABELS[viewMonth.getMonth()]} {viewMonth.getFullYear()}
-            </span>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="icon-sm"
               aria-label="Próximo mês"
               onClick={() => setViewMonth((month) => addMonths(month, 1))}
             >
               <ChevronRight />
             </Button>
-          </div>
-
-          <Button type="button" variant="outline" size="sm" onClick={() => setViewMonth(startOfMonth(new Date()))}>
-            Hoje
-          </Button>
-        </div>
-
-        {clientsError && (
-          <div className="mt-4 flex items-center justify-between text-sm text-destructive">
-            {clientsError}
-            <Button type="button" variant="link" size="sm" onClick={loadClients}>
-              Tentar novamente
+            <Button type="button" variant="outline" size="sm" onClick={() => setViewMonth(startOfMonth(new Date()))}>
+              Hoje
             </Button>
           </div>
-        )}
 
-        <div className="mt-4 rounded-xl border bg-card p-4">
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             {(Object.keys(NOTE_TYPE_LABELS) as NoteType[]).map((type) => (
               <span key={type} className="flex items-center gap-1.5">
@@ -456,26 +454,27 @@ export function CalendarPage() {
               </span>
             ))}
           </div>
+        </div>
 
-          {notesError && (
-            <div className="mt-4 flex items-center justify-between text-sm text-destructive">
-              {notesError}
-              <Button type="button" variant="link" size="sm" onClick={loadNotes}>
-                Tentar novamente
-              </Button>
-            </div>
-          )}
+        {(clientsError || notesError) && (
+          <div className="flex items-center justify-between gap-3 border-b px-4 py-2 text-sm text-destructive">
+            {clientsError ?? notesError}
+            <Button type="button" variant="link" size="sm" onClick={clientsError ? loadClients : loadNotes}>
+              Tentar novamente
+            </Button>
+          </div>
+        )}
 
-          <div className="mt-3 flex flex-col gap-4 lg:flex-row">
-            <div className="grid flex-1 grid-cols-7 gap-px overflow-hidden rounded-lg border bg-border text-xs">
+        <div className="flex min-h-0 flex-1 flex-col max-lg:overflow-y-auto lg:flex-row">
+          <div className="flex min-h-[26rem] min-w-0 flex-1 flex-col lg:min-h-0">
+            <div className="grid shrink-0 grid-cols-7 border-b bg-muted/50 text-xs">
               {WEEKDAY_LABELS.map((label) => (
-                <div
-                  key={label}
-                  className="bg-muted px-2 py-2 text-center font-medium uppercase tracking-wide text-muted-foreground"
-                >
+                <div key={label} className="px-2 py-2 text-center font-medium uppercase tracking-wide text-muted-foreground">
                   {label}
                 </div>
               ))}
+            </div>
+            <div className="grid min-h-0 flex-1 auto-rows-fr grid-cols-7 overflow-y-auto">
               {monthGridDays.map((day) => {
                 const key = toDateKey(day)
                 const dayNotes = notesByDate.get(key) ?? []
@@ -487,94 +486,101 @@ export function CalendarPage() {
                     key={key}
                     type="button"
                     onClick={() => handleSelectDay(day)}
-                    className={`flex min-h-[76px] cursor-pointer flex-col items-start gap-1 bg-card p-2 text-left hover:bg-muted ${
-                      isCurrentMonth ? 'text-foreground' : 'text-muted-foreground/50'
-                    } ${isSelected ? 'ring-2 ring-inset ring-primary' : ''}`}
+                    className={`flex min-h-20 cursor-pointer flex-col items-stretch gap-1 border-b border-r p-1.5 text-left transition-colors hover:bg-muted/60 ${
+                      isCurrentMonth ? 'bg-card text-foreground' : 'bg-muted/30 text-muted-foreground/60'
+                    } ${isSelected ? 'bg-primary/5 ring-2 ring-inset ring-primary' : ''}`}
                   >
                     <span
-                      className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium ${
                         isToday ? 'bg-primary text-primary-foreground' : ''
                       }`}
                     >
                       {day.getDate()}
                     </span>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="hidden min-w-0 flex-col gap-0.5 md:flex">
+                      {dayNotes.slice(0, dayNotes.length > 2 ? 1 : 2).map((note) => (
+                        <span
+                          key={note.id}
+                          title={note.title}
+                          className={`truncate rounded-sm border-l-2 px-1.5 py-0.5 text-[11px] font-medium text-foreground ${NOTE_TYPE_CHIP_CLASSES[note.type]}`}
+                        >
+                          {formatTime(new Date(note.eventAt))} {note.title}
+                        </span>
+                      ))}
+                      {dayNotes.length > 2 && (
+                        <span className="px-1.5 text-[11px] font-medium text-muted-foreground">
+                          +{dayNotes.length - 1} notas
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-1 md:hidden">
                       {dayNotes.slice(0, 3).map((note) => (
                         <span key={note.id} className={`h-1.5 w-1.5 rounded-full ${NOTE_TYPE_DOT_COLORS[note.type]}`} />
                       ))}
-                      {dayNotes.length > 3 && (
-                        <span className="text-[10px] text-muted-foreground">+{dayNotes.length - 3}</span>
-                      )}
                     </div>
                   </button>
                 )
               })}
             </div>
-
-            <div className="w-full shrink-0 rounded-lg border p-4 lg:w-72">
-              {selectedDate ? (
-                <>
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-foreground">{formatDayLabel(selectedDate)}</h3>
-                    <Button
-                      type="button"
-                      variant="link"
-                      size="sm"
-                      onClick={() => setSelectedDate(null)}
-                      className="h-auto p-0 text-xs text-muted-foreground"
-                    >
-                      Fechar
-                    </Button>
-                  </div>
-
-                  <Button type="button" onClick={() => openCreateModal(selectedDate)} className="mt-3 w-full">
-                    <Plus />
-                    Nova nota
-                  </Button>
-
-                  <div className="mt-4 max-h-[26rem] space-y-2 overflow-y-auto">
-                    {selectedDateNotes.length === 0 && (
-                      <p className="text-sm text-muted-foreground">Nenhuma nota para este dia.</p>
-                    )}
-                    {selectedDateNotes.map((note) => (
-                      <div key={note.id} className="rounded-lg border p-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <Badge variant={NOTE_TYPE_BADGE_VARIANTS[note.type]}>{NOTE_TYPE_LABELS[note.type]}</Badge>
-                              <span className="text-xs text-muted-foreground">{formatTime(new Date(note.eventAt))}</span>
-                              {note.notifyEnabled && <Bell className="h-3.5 w-3.5 text-muted-foreground" />}
-                            </div>
-                            <p className="mt-1 truncate text-sm font-medium text-foreground">{note.title}</p>
-                            {note.description && (
-                              <p className="mt-0.5 truncate text-xs text-muted-foreground">{note.description}</p>
-                            )}
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                              {note.appliesToAll
-                                ? 'Todos os clientes'
-                                : `${note.targetClientIds.length} cliente${note.targetClientIds.length === 1 ? '' : 's'}`}
-                            </p>
-                          </div>
-                          <ActionMenu
-                            items={[
-                              { label: 'Editar', onClick: () => openEditModal(note) },
-                              { label: 'Excluir', onClick: () => handleDeleteNote(note), danger: true },
-                            ]}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Selecione um dia no calendário para ver os itens programados.
-                </p>
-              )}
-            </div>
           </div>
+
+          {selectedDate && (
+            <aside className="flex w-full shrink-0 flex-col border-t bg-card lg:w-80 lg:border-l lg:border-t-0">
+              <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
+                <h3 className="text-sm font-semibold text-foreground">{formatDayLabel(selectedDate)}</h3>
+                <Button
+                  type="button"
+                  variant="subtle"
+                  size="icon-sm"
+                  aria-label="Fechar painel do dia"
+                  onClick={() => setSelectedDate(null)}
+                >
+                  <X />
+                </Button>
+              </div>
+
+              <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
+                <Button type="button" onClick={() => openCreateModal(selectedDate)} className="w-full">
+                  <Plus />
+                  Nova nota
+                </Button>
+
+                {selectedDateNotes.length === 0 && (
+                  <p className="pt-2 text-sm text-muted-foreground">Nenhuma nota para este dia.</p>
+                )}
+                {selectedDateNotes.map((note) => (
+                  <div key={note.id} className={`rounded-lg border border-l-4 p-3 ${NOTE_TYPE_CHIP_CLASSES[note.type]}`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <Badge variant={NOTE_TYPE_BADGE_VARIANTS[note.type]}>{NOTE_TYPE_LABELS[note.type]}</Badge>
+                          <span className="text-xs text-muted-foreground">{formatTime(new Date(note.eventAt))}</span>
+                          {note.notifyEnabled && <Bell className="h-3.5 w-3.5 text-muted-foreground" />}
+                        </div>
+                        <p className="mt-1 truncate text-sm font-medium text-foreground">{note.title}</p>
+                        {note.description && (
+                          <p className="mt-0.5 truncate text-xs text-muted-foreground">{note.description}</p>
+                        )}
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {note.appliesToAll
+                            ? 'Todos os clientes'
+                            : `${note.targetClientIds.length} cliente${note.targetClientIds.length === 1 ? '' : 's'}`}
+                        </p>
+                      </div>
+                      <ActionMenu
+                        items={[
+                          { label: 'Editar', onClick: () => openEditModal(note) },
+                          { label: 'Excluir', onClick: () => handleDeleteNote(note), danger: true },
+                        ]}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </aside>
+          )}
         </div>
-      </div>
+      </CrudPageCard>
 
       <Dialog
         open={noteModalOpen}
