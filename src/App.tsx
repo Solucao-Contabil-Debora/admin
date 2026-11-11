@@ -1,8 +1,9 @@
 import { useState } from 'react'
+import { Menu } from 'lucide-react'
 import { useAuth } from './hooks/useAuth'
 import { LoginForm } from './components/LoginForm'
 import loginImage from './assets/imagem-login.png'
-import logo from './assets/logo.png'
+import logo from './assets/logo-black.png'
 import { Sidebar } from './components/Sidebar'
 import type { NavKey } from './components/Sidebar'
 import { UsersPage } from './pages/UsersPage'
@@ -12,14 +13,6 @@ import { RequestsPage } from './pages/RequestsPage'
 import { DocumentsPage } from './pages/DocumentsPage'
 import { ClientsPage } from './pages/ClientsPage'
 
-function MenuIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
-
 function App() {
   const { session, isAdmin, loading, signIn, signOut } = useAuth()
   const [activeView, setActiveView] = useState<NavKey>('users')
@@ -27,22 +20,22 @@ function App() {
 
   if (loading) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-gray-950">
-        <p className="text-sm text-gray-500">Carregando...</p>
+      <div className="flex min-h-svh items-center justify-center bg-background">
+        <p className="text-sm text-muted-foreground">Carregando...</p>
       </div>
     )
   }
 
   if (!session) {
     return (
-      <div className="flex min-h-svh bg-zinc-950">
+      <div className="flex min-h-svh bg-background">
         <div className="relative hidden flex-1 overflow-hidden lg:block">
           <img src={loginImage} alt="" className="absolute inset-0 h-full w-full object-cover" />
         </div>
 
         <div className="flex flex-1 items-center justify-center p-6">
           <div className="w-full max-w-xs">
-            <img src={logo} alt="Solução Contábil" className="mx-auto mb-8 h-9 w-auto object-contain" />
+            <img src={logo} alt="Solução Contábil" className="mx-auto mb-4 h-24 w-auto object-contain" />
             <LoginForm onSubmit={signIn} />
           </div>
         </div>
@@ -86,7 +79,7 @@ function App() {
             onClick={() => setMobileNavOpen(true)}
             className="rounded-md p-1.5 text-gray-400 hover:bg-gray-800"
           >
-            <MenuIcon className="h-5 w-5" />
+            <Menu className="h-5 w-5" />
           </button>
         </div>
         <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">
