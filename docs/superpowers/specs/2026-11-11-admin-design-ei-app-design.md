@@ -93,4 +93,4 @@ Herdam o tema. Classes dependentes da escala `gray` invertida (`text-gray-*`, `b
 - Removido o filtro de período (`date-range`) do `CrudActionBarV2`: exigiria `react-day-picker` e `date-fns` e nenhuma página o usa.
 - Ajuste Tailwind 3→4 no `ui/sidebar`: `w-[--x]` → `w-(--x)`.
 - `ClientsPage` migrada para `CrudListPage` (filtros "Acesso ao app" e "Sincronização", busca, ordenação, paginação); título e subtítulo vão para o header via `usePageMetadata`.
-- As outras 5 páginas rodam dentro do novo layout, ainda com título próprio duplicado ao do header.
+- Layout como no ei-app (`showHeader={false}`): sidebar na altura toda e `AppHeader` dentro da área de conteúdo, colado nela, com o menu do usuário nas `actions` do header. As outras 5 páginas rodam dentro do novo layout, ainda com título próprio duplicado ao do header.

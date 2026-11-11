@@ -4,6 +4,7 @@ import { useAuth } from './hooks/useAuth'
 import { LoginForm } from './components/LoginForm'
 import loginImage from './assets/imagem-login.png'
 import logo from './assets/logo-black.png'
+import { AppHeader } from './components/layout/AppHeader'
 import { AppLayout } from './components/layout/AppLayout'
 import { HeaderUserMenu } from './components/layout/HeaderUserMenu'
 import type { SidebarConfig } from './components/types/sidebar'
@@ -90,27 +91,31 @@ function App() {
 
   return (
     <AppLayout
+      showHeader={false}
       sidebarConfig={SIDEBAR_CONFIG}
       activePath={activeView}
       onNavigate={(path) => setActiveView(path as NavKey)}
-      sidebarFooter={
-        <div className="[&>div]:justify-start">
-          <HeaderUserMenu
-          name={displayNameFromEmail(userEmail)}
-          subtitle={userEmail}
-          actions={[{ id: 'sign-out', label: 'Sair', icon: LogOut, onSelect: signOut, tone: 'destructive' }]}
-          fitContent
-        />
-        </div>
-      }
     >
-      {padded ? (
-        <div className="p-4 sm:p-6 lg:p-8">
-          <Page />
-        </div>
-      ) : (
-        <Page />
-      )}
+      <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <AppHeader
+          actions={
+            <HeaderUserMenu
+              name={displayNameFromEmail(userEmail)}
+              subtitle={userEmail}
+              actions={[{ id: 'sign-out', label: 'Sair', icon: LogOut, onSelect: signOut, tone: 'destructive' }]}
+            />
+          }
+        />
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-hidden">
+          {padded ? (
+            <div className="h-full overflow-y-auto p-4 sm:p-6 lg:p-8">
+              <Page />
+            </div>
+          ) : (
+            <Page />
+          )}
+        </main>
+      </div>
     </AppLayout>
   )
 }

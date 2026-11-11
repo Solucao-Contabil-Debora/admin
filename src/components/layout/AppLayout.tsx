@@ -15,7 +15,6 @@ interface AppLayoutProps {
   mobileNav?: ReactNode;
   activePath: string;
   onNavigate: (path: string) => void;
-  sidebarFooter?: ReactNode;
 }
 
 export const AppLayout = memo(function AppLayout({
@@ -26,11 +25,10 @@ export const AppLayout = memo(function AppLayout({
   mobileNav,
   activePath,
   onNavigate,
-  sidebarFooter,
 }: AppLayoutProps) {
   const sidebarComponent = useMemo(
-    () => sidebar || <AppSidebar config={sidebarConfig} footer={sidebarFooter} />,
-    [sidebar, sidebarConfig, sidebarFooter]
+    () => sidebar || <AppSidebar config={sidebarConfig} />,
+    [sidebar, sidebarConfig]
   );
 
   const sidebarStyle = useMemo(
