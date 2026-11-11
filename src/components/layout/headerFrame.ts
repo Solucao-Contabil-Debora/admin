@@ -1,0 +1,2 @@
+export const HEADER_FRAME_CLASSES =
+  "before:pointer-events-none before:absolute before:left-4 before:right-[var(--header-frame-inset-right,0px)] before:top-full before:hidden before:h-px before:bg-border before:content-[''] md:before:block after:pointer-events-none after:absolute after:left-0 after:top-full after:hidden after:h-4 after:w-4 after:content-[''] after:bg-[radial-gradient(circle_at_100%_100%,transparent_15px,hsl(var(--border))_15.5px,hsl(var(--border))_16px,hsl(var(--background))_16.5px)] md:after:block";

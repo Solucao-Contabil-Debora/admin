@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { Menu } from 'lucide-react'
+import { Building2, CalendarDays, Folder, Inbox, LogOut, Megaphone, Users } from 'lucide-react'
 import { useAuth } from './hooks/useAuth'
 import { LoginForm } from './components/LoginForm'
 import loginImage from './assets/imagem-login.png'
 import logo from './assets/logo-black.png'
-import { Sidebar } from './components/Sidebar'
-import type { NavKey } from './components/Sidebar'
+import { AppLayout } from './components/layout/AppLayout'
+import { HeaderUserMenu } from './components/layout/HeaderUserMenu'
+import type { SidebarConfig } from './components/types/sidebar'
+import { displayNameFromEmail } from './lib/displayName'
 import { UsersPage } from './pages/UsersPage'
 import { CalendarPage } from './pages/CalendarPage'
 import { AnnouncementsPage } from './pages/AnnouncementsPage'
@@ -13,10 +15,31 @@ import { RequestsPage } from './pages/RequestsPage'
 import { DocumentsPage } from './pages/DocumentsPage'
 import { ClientsPage } from './pages/ClientsPage'
 
+type NavKey = 'users' | 'clients' | 'calendar' | 'announcements' | 'requests' | 'documents'
+
+const SIDEBAR_CONFIG: SidebarConfig = {
+  navigation: [
+    { label: 'Usuários', path: 'users', icon: Users },
+    { label: 'Clientes', path: 'clients', icon: Building2 },
+    { label: 'Calendário', path: 'calendar', icon: CalendarDays },
+    { label: 'Comunicados', path: 'announcements', icon: Megaphone },
+    { label: 'Solicitações', path: 'requests', icon: Inbox },
+    { label: 'Documentos', path: 'documents', icon: Folder },
+  ],
+}
+
+const PAGES: Record<NavKey, { Page: () => React.JSX.Element; padded: boolean }> = {
+  users: { Page: UsersPage, padded: true },
+  clients: { Page: ClientsPage, padded: false },
+  calendar: { Page: CalendarPage, padded: true },
+  announcements: { Page: AnnouncementsPage, padded: true },
+  requests: { Page: RequestsPage, padded: true },
+  documents: { Page: DocumentsPage, padded: true },
+}
+
 function App() {
   const { session, isAdmin, loading, signIn, signOut } = useAuth()
   const [activeView, setActiveView] = useState<NavKey>('users')
-  const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   if (loading) {
     return (
@@ -62,36 +85,33 @@ function App() {
     )
   }
 
+  const userEmail = session.user.email ?? ''
+  const { Page, padded } = PAGES[activeView]
+
   return (
-    <div className="flex min-h-svh bg-gray-950">
-      <Sidebar
-        activeView={activeView}
-        onNavigate={setActiveView}
-        userEmail={session.user.email ?? ''}
-        onSignOut={signOut}
-        mobileOpen={mobileNavOpen}
-        onCloseMobile={() => setMobileNavOpen(false)}
-      />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center gap-3 border-b border-gray-800 px-4 py-3 md:hidden">
-          <button
-            type="button"
-            onClick={() => setMobileNavOpen(true)}
-            className="rounded-md p-1.5 text-gray-400 hover:bg-gray-800"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
+    <AppLayout
+      sidebarConfig={SIDEBAR_CONFIG}
+      activePath={activeView}
+      onNavigate={(path) => setActiveView(path as NavKey)}
+      sidebarFooter={
+        <div className="[&>div]:justify-start">
+          <HeaderUserMenu
+          name={displayNameFromEmail(userEmail)}
+          subtitle={userEmail}
+          actions={[{ id: 'sign-out', label: 'Sair', icon: LogOut, onSelect: signOut, tone: 'destructive' }]}
+          fitContent
+        />
         </div>
-        <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">
-          {activeView === 'users' && <UsersPage />}
-          {activeView === 'clients' && <ClientsPage />}
-          {activeView === 'calendar' && <CalendarPage />}
-          {activeView === 'announcements' && <AnnouncementsPage />}
-          {activeView === 'requests' && <RequestsPage />}
-          {activeView === 'documents' && <DocumentsPage />}
-        </main>
-      </div>
-    </div>
+      }
+    >
+      {padded ? (
+        <div className="p-4 sm:p-6 lg:p-8">
+          <Page />
+        </div>
+      ) : (
+        <Page />
+      )}
+    </AppLayout>
   )
 }
 

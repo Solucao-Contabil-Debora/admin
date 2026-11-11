@@ -1,16 +1,20 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Download, Search } from 'lucide-react'
+import { Download } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { extractErrorMessage } from '../lib/functionErrors'
 import { Dialog } from '../components/Dialog'
-import { ActionMenu } from '../components/ActionMenu'
 import { Badge } from '../components/ui/badge'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table'
+import { CrudListPage } from '../components/crud'
+import type { CrudEntityLabel, CrudFilterDef, CrudRowAction } from '../components/crud'
+import type { TableColumn } from '../components/types/crud'
+import { useCrudSearch } from '../hooks/useCrudSearch'
+import { useCrudSort } from '../hooks/useCrudSort'
+import { usePageMetadata } from '../contexts/PageMetadataContext'
 
 type ClientRow = {
   id: string
@@ -21,20 +25,36 @@ type ClientRow = {
   fiscal_documents: { count: number }[]
 }
 
-type SyncStatus = { label: string; className: string; detail?: string }
+type SyncKind = 'error' | 'empty' | 'pending' | 'synced'
+
+type SyncStatus = { kind: SyncKind; label: string; className: string; detail?: string }
+
+const CLIENT_ENTITY: CrudEntityLabel = { singular: 'cliente', plural: 'clientes' }
+
+const ACCESS_FILTER_OPTIONS = [
+  { value: 'with', label: 'Com acesso' },
+  { value: 'without', label: 'Sem acesso' },
+]
+
+const SYNC_FILTER_OPTIONS: { value: SyncKind; label: string }[] = [
+  { value: 'error', label: 'Com erro' },
+  { value: 'pending', label: 'Aguardando' },
+  { value: 'synced', label: 'Sincronizado' },
+  { value: 'empty', label: 'Sem notas' },
+]
 
 function syncStatusOf(client: ClientRow): SyncStatus {
   const units = client.jettax_sync_state
   const errors = units.map((unit) => unit.last_error).filter((error): error is string => !!error)
   if (errors.length > 0) {
-    return { label: 'Erro na sincronização', className: 'text-destructive', detail: errors.join('\n') }
+    return { kind: 'error', label: 'Erro na sincronização', className: 'text-destructive', detail: errors.join('\n') }
   }
-  if (units.length === 0) return { label: 'Sem notas para sincronizar', className: 'text-muted-foreground' }
+  if (units.length === 0) return { kind: 'empty', label: 'Sem notas para sincronizar', className: 'text-muted-foreground' }
   if (units.some((unit) => !unit.last_success_at)) {
-    return { label: 'Aguardando sincronização', className: 'text-warning' }
+    return { kind: 'pending', label: 'Aguardando sincronização', className: 'text-warning' }
   }
   const oldest = units.map((unit) => unit.last_success_at!).sort()[0]
-  return { label: `Sincronizado ${new Date(oldest).toLocaleString('pt-BR')}`, className: 'text-muted-foreground' }
+  return { kind: 'synced', label: `Sincronizado ${new Date(oldest).toLocaleString('pt-BR')}`, className: 'text-muted-foreground' }
 }
 
 type UserOption = {
@@ -64,7 +84,10 @@ async function runJettaxImport(dryRun: boolean) {
 export function ClientsPage() {
   const [clients, setClients] = useState<ClientRow[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const [search, setSearch] = useState('')
+  const search = useCrudSearch()
+  const sort = useCrudSort({ field: 'razao_social' })
+  const [accessFilter, setAccessFilter] = useState<string | null>(null)
+  const [syncFilter, setSyncFilter] = useState<string | null>(null)
 
   const [importOpen, setImportOpen] = useState(false)
   const [preview, setPreview] = useState<ImportSummary | null>(null)
@@ -102,17 +125,27 @@ export function ClientsPage() {
   }, [])
 
   const filteredClients = useMemo(() => {
-    const query = search.trim().toLowerCase()
+    const query = search.term.trim().toLowerCase()
     const digits = query.replace(/\D/g, '')
-    return (clients ?? []).filter(
-      (client) =>
-        !query ||
-        client.razao_social.toLowerCase().includes(query) ||
-        (digits !== '' && client.cnpj.includes(digits)),
-    )
-  }, [clients, search])
+    const direction = sort.sortDirection === 'asc' ? 1 : -1
+    return (clients ?? [])
+      .filter(
+        (client) =>
+          (!query ||
+            client.razao_social.toLowerCase().includes(query) ||
+            (digits !== '' && client.cnpj.includes(digits))) &&
+          (accessFilter === null || (client.client_users.length > 0) === (accessFilter === 'with')) &&
+          (syncFilter === null || syncStatusOf(client).kind === syncFilter),
+      )
+      .sort((a, b) => direction * a.razao_social.localeCompare(b.razao_social, 'pt-BR'))
+  }, [clients, search.term, accessFilter, syncFilter, sort.sortDirection])
 
   const totalWithAccess = clients?.filter((client) => client.client_users.length > 0).length ?? 0
+
+  usePageMetadata({
+    title: 'Clientes',
+    subtitle: `${clients?.length ?? 0} no total · ${totalWithAccess} com acesso ao app`,
+  })
 
   const accessClient = clients?.find((client) => client.id === accessClientId) ?? null
   const linkedUserIds = new Set(accessClient?.client_users.map((link) => link.user_id))
@@ -238,112 +271,99 @@ export function ClientsPage() {
     await loadClients()
   }
 
+  const columns: TableColumn<ClientRow>[] = [
+    {
+      key: 'razao_social',
+      header: 'Cliente',
+      sortable: true,
+      render: (client) => (
+        <>
+          <p className="font-medium text-foreground">{client.razao_social}</p>
+          <p className="text-xs text-muted-foreground">{formatCnpj(client.cnpj)}</p>
+        </>
+      ),
+    },
+    {
+      key: 'client_users',
+      header: 'Acesso ao app',
+      render: (client) => {
+        const loginCount = client.client_users.length
+        return (
+          <Badge variant={loginCount ? 'success' : 'secondary'}>
+            {loginCount ? `${loginCount} ${loginCount === 1 ? 'login' : 'logins'}` : 'Sem acesso'}
+          </Badge>
+        )
+      },
+    },
+    {
+      key: 'fiscal_documents',
+      header: 'Notas fiscais',
+      render: (client) => {
+        const syncStatus = syncStatusOf(client)
+        return (
+          <>
+            <p className="text-foreground">{client.fiscal_documents[0]?.count ?? 0} notas</p>
+            <p className={`text-xs ${syncStatus.className}`} title={syncStatus.detail}>
+              {syncingClientId === client.id ? 'Sincronizando...' : syncStatus.label}
+            </p>
+          </>
+        )
+      },
+    },
+  ]
+
+  const filterDefs: CrudFilterDef[] = [
+    {
+      key: 'access',
+      label: 'Acesso ao app',
+      options: ACCESS_FILTER_OPTIONS,
+      value: accessFilter,
+      onChange: setAccessFilter,
+      defaultVisible: true,
+    },
+    {
+      key: 'sync',
+      label: 'Sincronização',
+      options: SYNC_FILTER_OPTIONS,
+      value: syncFilter,
+      onChange: setSyncFilter,
+      defaultVisible: true,
+    },
+  ]
+
+  const rowActionsOf = (client: ClientRow): CrudRowAction[] => [
+    { label: 'Gerenciar acesso', onSelect: () => openAccessDialog(client) },
+    { label: 'Sincronizar notas agora', onSelect: () => handleSyncNow(client), hidden: syncingClientId !== null },
+  ]
+
   return (
-    <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Clientes</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {clients?.length ?? 0} no total · {totalWithAccess} com acesso ao app
-          </p>
-        </div>
-
-        <Button type="button" onClick={openImportDialog} className="shrink-0">
-          <Download />
-          Importar da Jettax
-        </Button>
-      </div>
-
-      <div className="mt-6 flex justify-end">
-        <div className="relative w-full sm:w-auto">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="text"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Buscar por nome ou CNPJ..."
-            className="pl-9 sm:w-64"
-          />
-        </div>
-      </div>
-
-      {syncMessage && (
-        <p className={`mt-4 text-sm ${syncMessage.isError ? 'text-destructive' : 'text-success'}`}>{syncMessage.text}</p>
-      )}
-
-      <div className="mt-4 rounded-lg border bg-card">
-        {loadError && (
-          <div className="flex items-center justify-between p-4 text-sm text-destructive">
-            {loadError}
-            <Button type="button" variant="link" size="sm" onClick={loadClients}>
-              Tentar novamente
-            </Button>
-          </div>
-        )}
-
-        {!loadError && clients === null && <p className="p-6 text-sm text-muted-foreground">Carregando...</p>}
-
-        {!loadError && clients !== null && (
-          <div className="overflow-x-auto">
-            <Table className="min-w-[640px]">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Acesso ao app</TableHead>
-                  <TableHead>Notas fiscais</TableHead>
-                  <TableHead className="w-16">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredClients.map((client) => {
-                  const loginCount = client.client_users.length
-                  const documentCount = client.fiscal_documents[0]?.count ?? 0
-                  const syncStatus = syncStatusOf(client)
-                  return (
-                    <TableRow key={client.id}>
-                      <TableCell>
-                        <p className="font-medium text-foreground">{client.razao_social}</p>
-                        <p className="text-xs text-muted-foreground">{formatCnpj(client.cnpj)}</p>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={loginCount ? 'success' : 'secondary'}>
-                          {loginCount ? `${loginCount} ${loginCount === 1 ? 'login' : 'logins'}` : 'Sem acesso'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <p className="text-foreground">{documentCount} notas</p>
-                        <p className={`text-xs ${syncStatus.className}`} title={syncStatus.detail}>
-                          {syncingClientId === client.id ? 'Sincronizando...' : syncStatus.label}
-                        </p>
-                      </TableCell>
-                      <TableCell>
-                        <ActionMenu
-                          width="w-52"
-                          items={[
-                            { label: 'Gerenciar acesso', onClick: () => openAccessDialog(client) },
-                            ...(syncingClientId
-                              ? []
-                              : [{ label: 'Sincronizar notas agora', onClick: () => handleSyncNow(client) }]),
-                          ]}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-                {filteredClients.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
-                      {clients.length === 0
-                        ? 'Nenhum cliente. Use "Importar da Jettax" para trazer a lista.'
-                        : 'Nenhum cliente encontrado.'}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </div>
+    <div className="h-full">
+      <CrudListPage<ClientRow>
+        entity={CLIENT_ENTITY}
+        rows={filteredClients}
+        columns={columns}
+        isLoading={clients === null && !loadError}
+        isError={loadError !== null}
+        onRetry={loadClients}
+        search={search}
+        searchPlaceholder="Buscar por nome ou CNPJ..."
+        filterDefs={filterDefs}
+        hasActiveFilters={accessFilter !== null || syncFilter !== null}
+        resetKey={`${accessFilter ?? ''}|${syncFilter ?? ''}`}
+        sort={sort}
+        onNew={openImportDialog}
+        newLabel="Importar da Jettax"
+        newIcon={Download}
+        emptyDescription='Use "Importar da Jettax" para trazer a lista.'
+        rowActions={rowActionsOf}
+        belowBar={
+          syncMessage && (
+            <p className={`px-4 pb-2 text-sm ${syncMessage.isError ? 'text-destructive' : 'text-success'}`}>
+              {syncMessage.text}
+            </p>
+          )
+        }
+      />
 
       <Dialog
         open={importOpen}

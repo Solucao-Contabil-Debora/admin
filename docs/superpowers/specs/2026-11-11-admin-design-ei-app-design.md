@@ -83,3 +83,14 @@ Herdam o tema. Classes dependentes da escala `gray` invertida (`text-gray-*`, `b
 - Migrar `UsersPage`, `CalendarPage`, `AnnouncementsPage`, `RequestsPage` e `DocumentsPage` e então remover a escala `gray` invertida e `primary-*`.
 - Avaliar `sonner`, `skeleton`, `empty-state` e `ui/sidebar`.
 - Telas autenticadas foram verificadas com Playwright e Supabase mockado; falta uma checagem com dados reais.
+
+## Rodada 2: listagem, sidebar, header e filtro por badge (2026-11-11)
+
+- Copiados do ei-app (arquivos praticamente idênticos): `CrudListPage`, `CrudActionBarV2` (filtros em chip), `CrudPageCard`, `CrudEmptyState`, `CrudRowActions`, `Table`/`Pagination`/`RowContextMenu`, `AppSidebar`, `AppHeader`, `AppLayout`, `HeaderUserMenu`, `ui/sidebar` e dependências (hooks `useCrud*`, `useColumn*`, `PageMetadataContext`).
+- Alias `@shared` → `src` (tsconfig e vite): as pastas do admin espelham `shared` do ei-app, então os imports originais funcionam sem edição.
+- Sem router: `NavLink.tsx` expõe `Link`/`useLocation` sobre o `NavigationContext` (`activePath`/`navigate`), e `AppSidebar`/`AppHeader` só trocaram o import de `react-router-dom`.
+- `jsx-shim.d.ts` restaura o namespace global `JSX` removido no React 19.
+- Removido o filtro de período (`date-range`) do `CrudActionBarV2`: exigiria `react-day-picker` e `date-fns` e nenhuma página o usa.
+- Ajuste Tailwind 3→4 no `ui/sidebar`: `w-[--x]` → `w-(--x)`.
+- `ClientsPage` migrada para `CrudListPage` (filtros "Acesso ao app" e "Sincronização", busca, ordenação, paginação); título e subtítulo vão para o header via `usePageMetadata`.
+- As outras 5 páginas rodam dentro do novo layout, ainda com título próprio duplicado ao do header.

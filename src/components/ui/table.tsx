@@ -1,5 +1,6 @@
 import * as React from "react";
-import { cn } from "../../lib/utils";
+import { cn } from "@shared/lib/utils";
+import { REVEAL_ROW_CLASSES, useReveal } from "@shared/hooks/useReveal";
 
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
@@ -41,17 +42,26 @@ const TableFooter = React.forwardRef<HTMLTableSectionElement, React.HTMLAttribut
 );
 TableFooter.displayName = "TableFooter";
 
-const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement>>(
-  ({ className, ...props }, ref) => (
-    <tr
-      ref={ref}
-      className={cn(
-        "border-b transition-colors even:bg-muted/20 hover:bg-muted/40 data-[state=selected]:bg-muted",
-        className,
-      )}
-      {...props}
-    />
-  ),
+interface TableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
+  reveal?: boolean;
+}
+
+const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
+  ({ className, reveal = false, ...props }, ref) => {
+    const { setRef, active, revealState } = useReveal<HTMLTableRowElement>(reveal, ref);
+    return (
+      <tr
+        ref={setRef}
+        data-reveal={revealState}
+        className={cn(
+          "border-b transition-colors even:bg-muted/20 hover:bg-muted/40 data-[state=selected]:bg-muted",
+          active && REVEAL_ROW_CLASSES,
+          className,
+        )}
+        {...props}
+      />
+    );
+  },
 );
 TableRow.displayName = "TableRow";
 
