@@ -10,6 +10,7 @@ import { CalendarPage } from './pages/CalendarPage'
 import { AnnouncementsPage } from './pages/AnnouncementsPage'
 import { RequestsPage } from './pages/RequestsPage'
 import { DocumentsPage } from './pages/DocumentsPage'
+import { ClientsPage } from './pages/ClientsPage'
 
 function MenuIcon({ className }: { className?: string }) {
   return (
@@ -90,6 +91,7 @@ function App() {
         </div>
         <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">
           {activeView === 'users' && <UsersPage />}
+          {activeView === 'clients' && <ClientsPage />}
           {activeView === 'calendar' && <CalendarPage />}
           {activeView === 'announcements' && <AnnouncementsPage />}
           {activeView === 'requests' && <RequestsPage />}

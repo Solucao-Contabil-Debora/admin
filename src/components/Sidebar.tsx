@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { displayNameFromEmail } from '../lib/displayName'
 import logo from '../assets/logo-black.png'
 
-export type NavKey = 'users' | 'calendar' | 'announcements' | 'requests' | 'documents'
+export type NavKey = 'users' | 'clients' | 'calendar' | 'announcements' | 'requests' | 'documents'
 
 type IconProps = {
   className?: string
@@ -116,6 +116,15 @@ function FolderIcon({ className }: IconProps) {
   )
 }
 
+function BuildingIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <rect x="4.5" y="3.5" width="15" height="17" rx="1.5" stroke="currentColor" strokeWidth="1.75" />
+      <path d="M8.5 7.5h2M13.5 7.5h2M8.5 11.5h2M13.5 11.5h2M10 20.5v-4h4v4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 type NavItem = {
   key: NavKey
   label: string
@@ -124,6 +133,7 @@ type NavItem = {
 
 const NAV_ITEMS: NavItem[] = [
   { key: 'users', label: 'Usuários', icon: UsersIcon },
+  { key: 'clients', label: 'Clientes', icon: BuildingIcon },
   { key: 'calendar', label: 'Calendário', icon: CalendarIcon },
   { key: 'announcements', label: 'Comunicados', icon: MegaphoneIcon },
   { key: 'requests', label: 'Solicitações', icon: InboxIcon },
