@@ -1,0 +1,70 @@
+# Padronização do design do admin com os componentes do ei-app
+
+Data: 2026-11-11
+Referência: `C:\Users\GuilhermedeFreitasRy\DevOps\new-system\ei-app` (commit mais recente, card 134250)
+Alvo: `solucao-contabil/admin`
+
+## Objetivo
+
+O admin passa a ter a mesma identidade visual e o mesmo conjunto de componentes (shadcn/ui) do ei-app.
+Primeira rodada: base visual + página piloto (`ClientsPage`). As demais páginas migram em rodadas seguintes.
+
+## Fora de escopo
+
+- Migrar `AnnouncementsPage`, `CalendarPage`, `DocumentsPage`, `RequestsPage` e `UsersPage` (apenas herdam o tema nesta rodada).
+- Dark mode / alternância de tema (os tokens `.dark` do ei-app podem ser copiados depois).
+- Pacote compartilhado entre repos.
+- Mudança de lógica de negócio, rotas ou acesso a dados (Supabase).
+
+## Decisões
+
+- **Abordagem:** copiar os componentes shadcn do ei-app para o admin e adaptá-los ao Tailwind 4. O admin permanece em React 19 e Tailwind 4.
+- **Tema:** claro, com os tokens do ei-app (primário `221 83% 53%`, base `slate`, `--radius: 0.5rem`). Sem alternância claro/escuro nesta rodada.
+- **Dependências novas** (necessárias, justificadas pelos componentes): `@radix-ui/react-dialog`, `@radix-ui/react-dropdown-menu`, `@radix-ui/react-select`, `@radix-ui/react-slot`, `@radix-ui/react-label`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`, `sonner`, `tw-animate-css`. Versões alinhadas às do ei-app, exceto onde incompatíveis com React 19.
+
+## Design
+
+### 1. Base
+
+- Instalar as dependências acima.
+- Criar `src/lib/utils.ts` com `cn()` (`clsx` + `tailwind-merge`).
+- Reescrever `src/index.css`:
+  - Remover a escala `gray` invertida e o primário zinc do `@theme`.
+  - Declarar os tokens do ei-app em `:root` (HSL sem `hsl()`, como no ei-app).
+  - Mapear com `@theme inline` (`--color-primary: hsl(var(--primary))`, etc.) para as utilities do Tailwind 4 funcionarem (`bg-primary`, `text-muted-foreground`, `border-input`, ...).
+  - Importar `tw-animate-css`.
+  - Remover o bloco `-webkit-autofill` com cor fixa, que assume fundo escuro.
+
+### 2. Componentes copiados (`src/components/ui/`)
+
+Origem: `ei-app/src/shared/components/ui/`.
+`button`, `input`, `label`, `select`, `table`, `badge`, `status-badge`, `dialog`, `dropdown-menu`, `sonner`, `skeleton`, `empty-state`, `sidebar` (se a `Sidebar` do ei-app for viável sem `react-router-dom`; caso contrário, mantém-se a estrutura atual da `Sidebar` com os novos tokens e componentes).
+
+Adaptações permitidas: imports (`@shared/...` → caminhos relativos do admin), sintaxe de Tailwind 3→4 (ex.: `outline-none` → `outline-hidden`, `shadow` → `shadow-sm` conforme renomeações), remoção de dependências internas do ei-app que não existam no admin. Nenhuma mudança de API dos componentes.
+
+### 3. Substituições
+
+- `Dialog.tsx` e `ActionMenu.tsx`: viram wrappers finos sobre `ui/dialog` e `ui/dropdown-menu`, mantendo as props atuais para que as páginas não migradas continuem funcionando.
+- `LoginForm.tsx`: reescrito com `Button`, `Input`, `Label`.
+- `Sidebar.tsx`: reescrita com os tokens `--sidebar-*` do ei-app e ícones `lucide-react`.
+- Ícones SVG inline do piloto viram `lucide-react`.
+
+### 4. Piloto: `ClientsPage`
+
+Migrar `<button>`, `<input>`, `<select>` e `<table>` (e as constantes de classe como `inputClassName`) para `Button`, `Input`, `Select` e `Table`. A lógica (`syncStatusOf`, queries, handlers) não muda. Cores de status (`text-red-400`, `text-yellow-400`, `text-gray-*`) passam para tokens/cores compatíveis com fundo claro (`text-destructive`, `text-muted-foreground`, etc.).
+
+### 5. Páginas não migradas
+
+Herdam o tema. Classes dependentes da escala `gray` invertida (`text-gray-*`, `bg-gray-*`, `border-gray-*`) passarão a usar a escala padrão do Tailwind, o que pode quebrar o contraste. Nesta rodada: inventariar o uso e corrigir apenas regressões gritantes de legibilidade; o restante fica para a migração de cada página.
+
+## Verificação
+
+- `npm run build` (tsc + vite) sem erros.
+- `npm run lint` (oxlint) sem novos avisos.
+- Abrir o admin no navegador e conferir: login, sidebar, `ClientsPage` (busca, listagem, diálogo, menu de ações) e uma página não migrada para checar a legibilidade.
+
+## Riscos
+
+- Conflito entre os tokens shadcn e a escala `gray` invertida atual (mitigado pela remoção da escala e pelo inventário do item 5).
+- Componentes do ei-app com acoplamentos internos (ex.: `sidebar.tsx` com `react-router-dom` e hooks do ei-app); fallback descrito no item 2.
+- Diferenças de versão (Tailwind 3→4, React 18→19) em classes e tipos dos componentes copiados.
