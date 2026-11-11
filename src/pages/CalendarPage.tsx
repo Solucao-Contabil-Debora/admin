@@ -420,7 +420,7 @@ export function CalendarPage() {
       >
         <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
           <div className="flex items-center gap-2">
-            <h2 className="min-w-40 text-lg font-semibold text-foreground">
+            <h2 className="min-w-36 text-base font-semibold text-foreground">
               {MONTH_LABELS[viewMonth.getMonth()]} {viewMonth.getFullYear()}
             </h2>
             <Button
