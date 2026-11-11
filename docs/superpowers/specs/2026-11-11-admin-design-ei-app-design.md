@@ -68,3 +68,18 @@ Herdam o tema. Classes dependentes da escala `gray` invertida (`text-gray-*`, `b
 - Conflito entre os tokens shadcn e a escala `gray` invertida atual (mitigado pela remoção da escala e pelo inventário do item 5).
 - Componentes do ei-app com acoplamentos internos (ex.: `sidebar.tsx` com `react-router-dom` e hooks do ei-app); fallback descrito no item 2.
 - Diferenças de versão (Tailwind 3→4, React 18→19) em classes e tipos dos componentes copiados.
+
+## Decisões tomadas na execução (2026-11-11)
+
+- A escala `gray` invertida e `primary-*` permanecem no `@theme` até a última página ser migrada; remover agora deixaria as 5 páginas não migradas escuras. Verificado visualmente: as 5 páginas seguem legíveis no tema novo.
+- Componentes copiados: `button`, `input`, `label`, `select`, `table` (sem `useReveal`), `badge`, `dropdown-menu`, `dialog`, `alert-dialog`. Não copiados nesta rodada: `separator` (só era importado, sem uso), `sonner`, `skeleton`, `empty-state`, `status-badge`, `sidebar` (dependem de `ThemeContext`, `sheet`, `tooltip` e hooks do ei-app). A `Sidebar` foi refeita sem `ui/sidebar`.
+- Tokens extras copiados do ei-app: `primary-hover`, `secondary-hover`, `destructive-light`, `success*`, `warning*`.
+- `Dialog` usa `DialogContent` com dimensões customizadas (os tamanhos `sm/md/lg` do ei-app limitam a altura e cortariam conteúdo); a prop `stacked` foi removida (sem uso).
+- Login usa `logo-black.png` e tema claro; bloco de autofill baseado em tokens.
+- Na `ClientsPage`, o status de sincronização continua como texto com tokens; `Badge` só no "Acesso ao app". O botão "Vincular" fica desabilitado sem usuário selecionado.
+
+## Pendências para a próxima rodada
+
+- Migrar `UsersPage`, `CalendarPage`, `AnnouncementsPage`, `RequestsPage` e `DocumentsPage` e então remover a escala `gray` invertida e `primary-*`.
+- Avaliar `sonner`, `skeleton`, `empty-state` e `ui/sidebar`.
+- Telas autenticadas foram verificadas com Playwright e Supabase mockado; falta uma checagem com dados reais.
