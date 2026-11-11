@@ -1,30 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import { Download, Search } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { extractErrorMessage } from '../lib/functionErrors'
 import { Dialog } from '../components/Dialog'
 import { ActionMenu } from '../components/ActionMenu'
-
-type IconProps = {
-  className?: string
-}
-
-function SearchIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.75" />
-      <path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function DownloadIcon({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path d="M12 4v11m0 0-4-4m4 4 4-4M5 19h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
+import { Badge } from '../components/ui/badge'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table'
 
 type ClientRow = {
   id: string
@@ -41,14 +27,14 @@ function syncStatusOf(client: ClientRow): SyncStatus {
   const units = client.jettax_sync_state
   const errors = units.map((unit) => unit.last_error).filter((error): error is string => !!error)
   if (errors.length > 0) {
-    return { label: 'Erro na sincronização', className: 'text-red-400', detail: errors.join('\n') }
+    return { label: 'Erro na sincronização', className: 'text-destructive', detail: errors.join('\n') }
   }
-  if (units.length === 0) return { label: 'Sem notas para sincronizar', className: 'text-gray-500' }
+  if (units.length === 0) return { label: 'Sem notas para sincronizar', className: 'text-muted-foreground' }
   if (units.some((unit) => !unit.last_success_at)) {
-    return { label: 'Aguardando sincronização', className: 'text-yellow-400' }
+    return { label: 'Aguardando sincronização', className: 'text-warning' }
   }
   const oldest = units.map((unit) => unit.last_success_at!).sort()[0]
-  return { label: `Sincronizado ${new Date(oldest).toLocaleString('pt-BR')}`, className: 'text-gray-400' }
+  return { label: `Sincronizado ${new Date(oldest).toLocaleString('pt-BR')}`, className: 'text-muted-foreground' }
 }
 
 type UserOption = {
@@ -56,9 +42,6 @@ type UserOption = {
   email: string
   isAdmin: boolean
 }
-
-const inputClassName =
-  'w-full rounded-lg border border-gray-700 px-3 py-2 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20'
 
 type ImportSummary = {
   total_jettax: number
@@ -259,88 +242,81 @@ export function ClientsPage() {
     <div>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-100">Clientes</h2>
-          <p className="mt-1 text-sm text-gray-400">
+          <h2 className="text-2xl font-bold text-foreground">Clientes</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
             {clients?.length ?? 0} no total · {totalWithAccess} com acesso ao app
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={openImportDialog}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          <DownloadIcon className="h-4 w-4" />
+        <Button type="button" onClick={openImportDialog} className="shrink-0">
+          <Download />
           Importar da Jettax
-        </button>
+        </Button>
       </div>
 
       <div className="mt-6 flex justify-end">
         <div className="relative w-full sm:w-auto">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-          <input
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
             type="text"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Buscar por nome ou CNPJ..."
-            className="w-full rounded-lg border border-gray-800 bg-gray-800 py-2 pl-9 pr-3 text-sm focus:border-gray-600 focus:outline-none sm:w-64"
+            className="pl-9 sm:w-64"
           />
         </div>
       </div>
 
       {syncMessage && (
-        <p className={`mt-4 text-sm ${syncMessage.isError ? 'text-red-400' : 'text-green-400'}`}>{syncMessage.text}</p>
+        <p className={`mt-4 text-sm ${syncMessage.isError ? 'text-destructive' : 'text-success'}`}>{syncMessage.text}</p>
       )}
 
-      <div className="mt-4 rounded-lg border border-gray-800 bg-gray-900">
+      <div className="mt-4 rounded-lg border bg-card">
         {loadError && (
-          <div className="flex items-center justify-between p-4 text-sm text-red-400">
+          <div className="flex items-center justify-between p-4 text-sm text-destructive">
             {loadError}
-            <button type="button" onClick={loadClients} className="font-medium underline">
+            <Button type="button" variant="link" size="sm" onClick={loadClients}>
               Tentar novamente
-            </button>
+            </Button>
           </div>
         )}
 
-        {!loadError && clients === null && <p className="p-6 text-sm text-gray-500">Carregando...</p>}
+        {!loadError && clients === null && <p className="p-6 text-sm text-muted-foreground">Carregando...</p>}
 
         {!loadError && clients !== null && (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-gray-800 text-xs uppercase tracking-wide text-gray-500">
-                  <th className="px-4 py-3 font-medium">Cliente</th>
-                  <th className="px-4 py-3 font-medium">Acesso ao app</th>
-                  <th className="px-4 py-3 font-medium">Notas fiscais</th>
-                  <th className="px-4 py-3 font-medium">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Acesso ao app</TableHead>
+                  <TableHead>Notas fiscais</TableHead>
+                  <TableHead>Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {filteredClients.map((client) => {
                   const loginCount = client.client_users.length
                   const documentCount = client.fiscal_documents[0]?.count ?? 0
                   const syncStatus = syncStatusOf(client)
                   return (
-                    <tr key={client.id} className="border-b border-gray-800 last:border-0">
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-gray-100">{client.razao_social}</p>
-                        <p className="text-xs text-gray-400">{formatCnpj(client.cnpj)}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="flex items-center gap-1.5">
-                          <span className={`h-1.5 w-1.5 rounded-full ${loginCount ? 'bg-green-500' : 'bg-gray-600'}`} />
-                          <span className={loginCount ? 'text-green-400' : 'text-gray-400'}>
-                            {loginCount ? `${loginCount} ${loginCount === 1 ? 'login' : 'logins'}` : 'Sem acesso'}
-                          </span>
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="text-gray-100">{documentCount} notas</p>
+                    <TableRow key={client.id}>
+                      <TableCell>
+                        <p className="font-medium text-foreground">{client.razao_social}</p>
+                        <p className="text-xs text-muted-foreground">{formatCnpj(client.cnpj)}</p>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={loginCount ? 'success' : 'secondary'}>
+                          {loginCount ? `${loginCount} ${loginCount === 1 ? 'login' : 'logins'}` : 'Sem acesso'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <p className="text-foreground">{documentCount} notas</p>
                         <p className={`text-xs ${syncStatus.className}`} title={syncStatus.detail}>
                           {syncingClientId === client.id ? 'Sincronizando...' : syncStatus.label}
                         </p>
-                      </td>
-                      <td className="px-4 py-3">
+                      </TableCell>
+                      <TableCell>
                         <ActionMenu
                           width="w-52"
                           items={[
@@ -350,21 +326,21 @@ export function ClientsPage() {
                               : [{ label: 'Sincronizar notas agora', onClick: () => handleSyncNow(client) }]),
                           ]}
                         />
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   )
                 })}
                 {filteredClients.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-sm text-gray-500">
+                  <TableRow>
+                    <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
                       {clients.length === 0
                         ? 'Nenhum cliente. Use "Importar da Jettax" para trazer a lista.'
                         : 'Nenhum cliente encontrado.'}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
       </div>
@@ -376,37 +352,28 @@ export function ClientsPage() {
         description="Nada é gravado até você confirmar. Nenhum cliente ganha acesso ao app."
       >
         <div className="space-y-4">
-          {importing && !preview && <p className="text-sm text-gray-400">Consultando a Jettax...</p>}
+          {importing && !preview && <p className="text-sm text-muted-foreground">Consultando a Jettax...</p>}
 
           {preview && (
-            <ul className="space-y-1 text-sm text-gray-300">
+            <ul className="space-y-1 text-sm text-foreground">
               <li>{preview.total_jettax} clientes encontrados na Jettax</li>
               <li>{preview.new} novos</li>
               <li>{preview.updated} já cadastrados (serão atualizados)</li>
               {preview.invalid > 0 && (
-                <li className="text-yellow-400">{preview.invalid} ignorados por CNPJ ou razão social inválidos</li>
+                <li className="text-warning">{preview.invalid} ignorados por CNPJ ou razão social inválidos</li>
               )}
             </ul>
           )}
 
-          {importError && <p className="text-sm text-red-400">{importError}</p>}
+          {importError && <p className="text-sm text-destructive">{importError}</p>}
 
-          <div className="flex items-center justify-end gap-2 border-t border-gray-800 pt-4">
-            <button
-              type="button"
-              onClick={() => setImportOpen(false)}
-              className="rounded-lg border border-gray-700 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800"
-            >
+          <div className="flex items-center justify-end gap-2 border-t pt-4">
+            <Button type="button" variant="outline" onClick={() => setImportOpen(false)}>
               Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={handleConfirmImport}
-              disabled={!preview || importing}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
-            >
+            </Button>
+            <Button type="button" onClick={handleConfirmImport} disabled={!preview || importing}>
               {importing && preview ? 'Importando...' : 'Confirmar importação'}
-            </button>
+            </Button>
           </div>
         </div>
       </Dialog>
@@ -419,65 +386,60 @@ export function ClientsPage() {
       >
         <div className="space-y-5">
           <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-300">Logins com acesso</p>
-            {accessClient?.client_users.length === 0 && <p className="text-sm text-gray-500">Nenhum login vinculado.</p>}
+            <p className="text-sm font-medium text-foreground">Logins com acesso</p>
+            {accessClient?.client_users.length === 0 && (
+              <p className="text-sm text-muted-foreground">Nenhum login vinculado.</p>
+            )}
             <ul className="space-y-1">
               {accessClient?.client_users.map((link) => (
-                <li key={link.user_id} className="flex items-center justify-between gap-2 text-sm text-gray-300">
+                <li key={link.user_id} className="flex items-center justify-between gap-2 text-sm text-foreground">
                   <span className="truncate">{emailByUserId.get(link.user_id) ?? 'Carregando...'}</span>
-                  <button
+                  <Button
                     type="button"
+                    variant="link"
+                    size="sm"
                     onClick={() => handleUnlink(link.user_id)}
-                    className="shrink-0 text-xs font-medium text-red-400 hover:underline"
+                    className="h-auto shrink-0 p-0 text-xs text-destructive"
                   >
                     Remover
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
           </div>
 
-          <form onSubmit={handleLinkExisting} className="space-y-2 border-t border-gray-800 pt-4">
-            <label htmlFor="link-user" className="text-sm font-medium text-gray-300">
-              Vincular login existente
-            </label>
+          <form onSubmit={handleLinkExisting} className="space-y-2 border-t pt-4">
+            <Label htmlFor="link-user">Vincular login existente</Label>
             <div className="flex gap-2">
-              <select
-                id="link-user"
-                required
-                value={selectedUserId}
-                onChange={(event) => setSelectedUserId(event.target.value)}
-                className={inputClassName}
-              >
-                <option value="">{users === null ? 'Carregando...' : 'Selecione um usuário'}</option>
-                {linkableUsers.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.email}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="submit"
-                disabled={savingAccess}
-                className="shrink-0 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
-              >
+              <Select required value={selectedUserId} onValueChange={setSelectedUserId}>
+                <SelectTrigger id="link-user">
+                  <SelectValue placeholder={users === null ? 'Carregando...' : 'Selecione um usuário'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {linkableUsers.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {user.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button type="submit" disabled={savingAccess || !selectedUserId} className="shrink-0">
                 Vincular
-              </button>
+              </Button>
             </div>
           </form>
 
-          <form onSubmit={handleCreateAndLink} className="space-y-2 border-t border-gray-800 pt-4">
-            <p className="text-sm font-medium text-gray-300">Criar novo login para este cliente</p>
-            <input
+          <form onSubmit={handleCreateAndLink} className="space-y-2 border-t pt-4">
+            <p className="text-sm font-medium text-foreground">Criar novo login para este cliente</p>
+            <Input
               type="email"
               required
               autoComplete="off"
               placeholder="E-mail"
               value={newEmail}
               onChange={(event) => setNewEmail(event.target.value)}
-              className={inputClassName}
             />
-            <input
+            <Input
               type="password"
               required
               minLength={6}
@@ -485,20 +447,15 @@ export function ClientsPage() {
               placeholder="Senha"
               value={newPassword}
               onChange={(event) => setNewPassword(event.target.value)}
-              className={inputClassName}
             />
             <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={savingAccess}
-                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
-              >
+              <Button type="submit" disabled={savingAccess}>
                 {savingAccess ? 'Salvando...' : 'Criar e vincular'}
-              </button>
+              </Button>
             </div>
           </form>
 
-          {accessError && <p className="text-sm text-red-400">{accessError}</p>}
+          {accessError && <p className="text-sm text-destructive">{accessError}</p>}
         </div>
       </Dialog>
     </div>
